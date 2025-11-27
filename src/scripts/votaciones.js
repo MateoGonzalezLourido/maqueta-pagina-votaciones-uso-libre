@@ -2,7 +2,7 @@
 import { supabase } from '../supabase/supabase'
 import { getBrowserFingerprint } from './datos_usuario_control.js'
 
-/*TODAS LAS VARIABLES O FUNCIONES PARA HACERLAS MAS ACCESIBLES */
+/*ALGUNAS VARIABLES O FUNCIONES PARA HACERLAS MAS ACCESIBLES */
 const NAME_DT_LOC_BONO_VARIABLE = "bono_variable"
 const NAME_DT_LOC_NOMBRE_VARIABLE = "nombre_variable"
 //supabase datos
@@ -34,59 +34,10 @@ const conseguir_datos_SUPABASE = async ({ encuesta_id = null, tabla = NOMBRE_TAB
     }
     return data
 }
-/*const conseguir_datos_SUPABASE = async ({ encuesta_id = null, tabla = NOMBRE_TABLA_DEFECTO_USAR }) => {
-    if (encuesta_id) {
-        const { data, error } = await supabase
-            .from(tabla)
-            .select("*")
-            .eq("id_encuesta", encuesta_id);
-
-        if (error && tabla == NOMBRE_TABLA_ENCUESTAS) {
-            console.log("Error al recibir datos encuestas:", error)
-            return []
-        }
-        else if (error && tabla == NOMBRE_TABLA_VOTACIONES) {
-            console.log("Error al recibir votaciones encuestas:", error)
-            return []
-        }
-
-        if (data != undefined && data.length == 0 && tabla == NOMBRE_TABLA_ENCUESTAS) {
-            console.log("No hay encuestas!")
-        }
-        else if (data != undefined && data[0].opciones != undefined && data[0].opciones.length == 0 && tabla == NOMBRE_TABLA_ENCUESTAS) {
-            console.log("No hay opciones!")
-        }
-
-        return data
-    }
-    else {
-        const { data, error } = await supabase
-            .from(tabla)
-            .select("*");
-
-        if (error && tabla == NOMBRE_TABLA_ENCUESTAS) {
-            console.log("Error al recibir datos encuestas:", error)
-            return []
-        }
-        else if (error && tabla == NOMBRE_TABLA_VOTACIONES) {
-            console.log("Error al recibir votaciones encuestas:", error)
-            return []
-        }
-
-        if (data != undefined && data.length == 0 && tabla == NOMBRE_TABLA_ENCUESTAS) {
-            console.log("No hay encuestas!")
-        }
-        else if (data != undefined && data[0].opciones && data[0].opciones.length == 0 && tabla == NOMBRE_TABLA_ENCUESTAS) {
-            console.log("No hay opciones!")
-        }
-
-        return data
-    }
-}*/
 
 const borrar_votacion_encuesta = async (id_nombre, id_encuesta, opcion_votada_encuesta) => {
     const { error } = await supabase
-        .from('encuestas_votaciones')
+        .from(NOMBRE_TABLA_VOTACIONES)
         .delete()
         .eq('id_nombre', id_nombre)
         .eq('id_encuesta', id_encuesta)
@@ -98,7 +49,7 @@ const borrar_votacion_encuesta = async (id_nombre, id_encuesta, opcion_votada_en
 }
 const añadir_votacion_encuesta = async ({ id_nombre, id_encuesta, opcion_votada_encuesta, nombre_votante, bono_votante }) => {
     const { error } = await supabase
-        .from('encuestas_votaciones')
+        .from(NOMBRE_TABLA_VOTACIONES)
         .insert([
             {
                 "id_nombre": id_nombre,
@@ -113,6 +64,7 @@ const añadir_votacion_encuesta = async ({ id_nombre, id_encuesta, opcion_votada
         console.error("Error al añadir voto:", error);
     }
 }
+
 const generar_titulos_encuestas = (data, encuesta_id) => {
     let html = ``
     data.forEach(encuesta => {
