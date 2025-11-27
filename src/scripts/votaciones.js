@@ -3,9 +3,11 @@ import { supabase } from '../supabase/supabase'
 import { getBrowserFingerprint } from './datos_usuario_control.js'
 
 /*ALGUNAS VARIABLES O FUNCIONES PARA HACERLAS MAS ACCESIBLES */
+//nombres bvariables localstorage
 const NAME_DT_LOC_BONO_VARIABLE = "bono_variable"
 const NAME_DT_LOC_NOMBRE_VARIABLE = "nombre_variable"
 const NAME_DT_LOC_VOTACIONES = "votaciones"
+//clases(para animaciones o queryselector)
 const CLASS_CHECKED_CHECKBOX_VOTO = "checked"
 const CLASS_SEMIDESAPARECER_CHECKBOX_VOTO = "semi-desaparecer"
 const CLASS_SEMIAPARECER_CHECKBOX_VOTO = "semi-aparecer"
@@ -13,27 +15,33 @@ const CLASS_APARECER_CHECKBOX_VOTO = "aparecer"
 const CLASS_DESAPARECER_CHECKBOX_VOTO = "desaparecer"
 const CLASS_OPCION_VOTADA = "opcion-votado"
 const CLASS_OPCION_NO_VOTADA = "opcion-no-votado"
+const CLASS_DISPLAY_FLEX = "flex"
+const CLASS_DISPLAY_NONE = "display-none"
+//IDs o partes 
 const PARTE_ID_REMPLAZAR_CHECKBOX_VOTO = "checkbox-opcion-encuesta-"
 const PARTE_ID_USAR_OPCION_VOTACION = "opcion-encuesta-"
 const PARTE_ID_REMPLAZAR_IMG_CHECK = "img-check-votado-"
 const PARTE_ID_CONTADOR_VOTANTES = "numero-votantes-bt-lista-"
+const $ID_PAGINA_DATOS_ANALIZAR_VOTACION = "pagina-datos-analizados-encuesta"
+const $MINI_ANALISIS_DATOS = "mini-analisis-opcion"
+const $id_select_encuestas = "select-encuestas"
+const PARTE_ID_BT_ANALIZAR_DATOS = "bt-analizar-datos-encuesta-"
+//Textos
 const TEXTO_CONTADOR_VOTOS = "*Votos: "
-const URL_CHECKED_IMG = "/checked.svg"
 const TEXTO_VOTO_UNICO = "*voto único"
 const TEXTO_VOTO_MULTIPLE = "*voto múltiple"
 const TEXTO_ANALIZAR_DATOS_BT = "Analizar Datos"
-const $id_select_encuestas = "select-encuestas"
-const PARTE_ID_BT_ANALIZAR_DATOS = "bt-analizar-datos-encuesta-"
+//Valores por defecto 
 const VALOR_DEFECTO_NOMBRE_USUARIO = "anónimo"
-const $ID_PAGINA_DATOS_ANALIZAR_VOTACION = "pagina-datos-analizados-encuesta"
-const $MINI_ANALISIS_DATOS = "mini-analisis-opcion"
-const CLASS_DISPLAY_FLEX = "flex"
-const CLASS_DISPLAY_NONE = "display-none"
+//URLs
+const URL_CHECKED_IMG = "/checked.svg"
 //supabase datos
 const NOMBRE_TABLA_ENCUESTAS = "encuestas"
 const NOMBRE_TABLA_VOTACIONES = "encuestas_votaciones"
 const NOMBRE_TABLA_DEFECTO_USAR = NOMBRE_TABLA_ENCUESTAS
 
+/*CODIGO */
+//funciones de SUPABASE
 const conseguir_datos_SUPABASE = async ({ encuesta_id = null, tabla = NOMBRE_TABLA_DEFECTO_USAR }) => {
     let query = supabase.from(tabla).select("*");
     if (encuesta_id) query = query.eq("id_encuesta", encuesta_id);
@@ -89,6 +97,7 @@ const añadir_votacion_encuesta = async ({ id_nombre, id_encuesta, opcion_votada
     }
 }
 
+//crear select de las encuestas
 const generar_titulos_encuestas = (data, encuesta_id) => {
     let html = ``
     data.forEach(encuesta => {
@@ -138,6 +147,7 @@ const generar_opciones_encuestas = (encuestas, encuesta_id, contador_votaciones,
     })
     return html_opciones
 }
+//fragmento de codigo para el recuento de votos generales
 function contador_votos(votaciones) {
     let contador_votaciones = []
     votaciones.forEach(vt => {
@@ -155,6 +165,7 @@ function contador_votos(votaciones) {
     })
     return contador_votaciones
 }
+//fragmento de codigo para el recuento de votos propios hechos
 function mirar_opciones_votadas(votaciones) {
     let opciones_votadas = []
     //mirar que opciones votaste(usando usuario)
@@ -166,6 +177,7 @@ function mirar_opciones_votadas(votaciones) {
     })
     return opciones_votadas
 }
+//ES EL "MAIN" O "CONTROLADOR" DE LAS ENCUESTAS 
 function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_votadas) {
     let voto_unico = data.find(x => x.id_encuesta == encuesta_id)
     voto_unico = voto_unico.voto_unico ? TEXTO_VOTO_UNICO : TEXTO_VOTO_MULTIPLE
@@ -498,6 +510,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
     })
 }
 
+//iniciador de codigo
 globalThis.addEventListener("DOMContentLoaded", () => {
     conseguir_datos_SUPABASE({}).then(data => {
         //escoger una encuesta como principal(si hay solo una principal esa es, sino se coge la primera que llegue)

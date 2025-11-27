@@ -1,17 +1,21 @@
 /*VARIABLES GLOBALES PARA MEJORAR LA ACCESIBILIDAD DE LOS CAMBIOS */
-let $bt_usuario, $menu_usuario, $nombre_usuario, $bono_usuario
+//IDs o partes
 const $ID_BT_USUARIO = "bt-usuario"
 const $ID_MENU_USUARIO = "menu-usuario"
 const $ID_INPUT_NOMBRE_USUARIO = "input-nombre-usuario"
 const $ID_INPUT_BONO_USUARIO = "input-bono-usuario"
+//nombre variables localstorage
 const NAME_DT_LOC_BONO_VARIABLE = "bono_variable"
 const NAME_DT_LOC_NOMBRE_VARIABLE = "nombre_variable"
-const VALOR_DEFECTO_NOMBRE_USUARIO="anónimo"
-const VALOR_DEFECTO_BONO_USUARIO=false
-const CLASS_CERRAR_MENU="cerrado"
-const CLASS_ABRIR_MENU="abierto"
+//valores por defecto
+const VALOR_DEFECTO_NOMBRE_USUARIO = "anónimo"
+const VALOR_DEFECTO_BONO_USUARIO = false
+//clases
+const CLASS_CERRAR_MENU = "cerrado"
+const CLASS_ABRIR_MENU = "abierto"
 
-
+/*CODIGO */
+let $bt_usuario, $menu_usuario, $nombre_usuario, $bono_usuario
 document.addEventListener("DOMContentLoaded", () => {
     $bt_usuario = document.querySelector(`#${$ID_BT_USUARIO}`)
     $menu_usuario = document.querySelector(`#${$ID_MENU_USUARIO}`)
