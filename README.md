@@ -10,8 +10,11 @@ cosigo fácil de adaptar
 ##como funciona
 
 #*Tecnologías usadas:
+
 Vite
+
 js/html/css
+
 supabase
 
 #*Como usarlo:
