@@ -5,21 +5,30 @@ import { getBrowserFingerprint } from './datos_usuario_control.js'
 /*ALGUNAS VARIABLES O FUNCIONES PARA HACERLAS MAS ACCESIBLES */
 const NAME_DT_LOC_BONO_VARIABLE = "bono_variable"
 const NAME_DT_LOC_NOMBRE_VARIABLE = "nombre_variable"
-const NAME_DT_LOC_VOTACIONES="votaciones"
+const NAME_DT_LOC_VOTACIONES = "votaciones"
 const CLASS_CHECKED_CHECKBOX_VOTO = "checked"
 const CLASS_SEMIDESAPARECER_CHECKBOX_VOTO = "semi-desaparecer"
 const CLASS_SEMIAPARECER_CHECKBOX_VOTO = "semi-aparecer"
+const CLASS_APARECER_CHECKBOX_VOTO = "aparecer"
+const CLASS_DESAPARECER_CHECKBOX_VOTO = "desaparecer"
 const CLASS_OPCION_VOTADA = "opcion-votado"
+const CLASS_OPCION_NO_VOTADA = "opcion-no-votado"
 const PARTE_ID_REMPLAZAR_CHECKBOX_VOTO = "checkbox-opcion-encuesta-"
 const PARTE_ID_USAR_OPCION_VOTACION = "opcion-encuesta-"
 const PARTE_ID_REMPLAZAR_IMG_CHECK = "img-check-votado-"
-const PARTE_ID_CONTADOR_VOTANTES= "numero-votantes-bt-lista-"
+const PARTE_ID_CONTADOR_VOTANTES = "numero-votantes-bt-lista-"
 const TEXTO_CONTADOR_VOTOS = "*Votos: "
 const URL_CHECKED_IMG = "/checked.svg"
-const TEXTO_VOTO_UNICO="*voto único"
-const TEXTO_VOTO_MULTIPLE="*voto múltiple"
+const TEXTO_VOTO_UNICO = "*voto único"
+const TEXTO_VOTO_MULTIPLE = "*voto múltiple"
+const TEXTO_ANALIZAR_DATOS_BT = "Analizar Datos"
 const $id_select_encuestas = "select-encuestas"
-const PARTE_ID_BT_ANALIZAR_DATOS="bt-analizar-datos-encuesta-"
+const PARTE_ID_BT_ANALIZAR_DATOS = "bt-analizar-datos-encuesta-"
+const VALOR_DEFECTO_NOMBRE_USUARIO = "anónimo"
+const $ID_PAGINA_DATOS_ANALIZAR_VOTACION = "pagina-datos-analizados-encuesta"
+const $MINI_ANALISIS_DATOS = "mini-analisis-opcion"
+const CLASS_DISPLAY_FLEX = "flex"
+const CLASS_DISPLAY_NONE = "display-none"
 //supabase datos
 const NOMBRE_TABLA_ENCUESTAS = "encuestas"
 const NOMBRE_TABLA_VOTACIONES = "encuestas_votaciones"
@@ -170,7 +179,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
         ${generar_opciones_encuestas(data, encuesta_id, contador_votaciones, opciones_votadas)}
         </section></div>
         <section id="datos-analizar">
-        <button id="${PARTE_ID_BT_ANALIZAR_DATOS}${encuesta_id}" class="bt-analizar-datos">Analizar Datos</button>
+        <button id="${PARTE_ID_BT_ANALIZAR_DATOS}${encuesta_id}" class="bt-analizar-datos">${TEXTO_ANALIZAR_DATOS_BT}</button>
         </section>
         `
     //evento cambio de encuesta
@@ -226,55 +235,53 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                 //ver si ya existe ese voto
                 conseguir_datos_SUPABASE({ "encuesta_id": encuesta_id, "tabla": NOMBRE_TABLA_VOTACIONES }).then(votaciones => {
                     let existe = votaciones.find(x => x.id_nombre == id_nombre && x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1])
-                    let unico_voto_realizado;
+                    let unico_voto_realizado = null
                     if (voto_unico) {
                         unico_voto_realizado = votaciones.find(x => x.id_nombre == id_nombre && x.id_encuesta == id_seleccionado[0])
                     }
-                    if (!voto_unico || (voto_unico && !unico_voto_realizado)) {
-                        if (existe) {//ya se ha botado -> borrar de la base de datos
-                            borrar_votacion_encuesta(id_nombre.toString(), Number(id_seleccionado[0]), Number(id_seleccionado[1])).then(() => {
-                                //mostrar cambios en el html
-                                const id_img = boton.firstElementChild.id
-                                document.querySelector(`#${id_img}`).classList.remove(CLASS_CHECKED_CHECKBOX_VOTO)
-                                document.querySelector(`#${id_img}`).classList.remove(CLASS_SEMIAPARECER_CHECKBOX_VOTO)
-                                document.querySelector(`#${id_img}`).classList.add(CLASS_SEMIDESAPARECER_CHECKBOX_VOTO)
 
-                                document.querySelector(`#${PARTE_ID_USAR_OPCION_VOTACION}${id_seleccionado[1]}`).classList.remove(CLASS_OPCION_VOTADA)
-                                document.querySelector(`#${PARTE_ID_USAR_OPCION_VOTACION}${id_seleccionado[1]}`).classList.add("opcion-no-votado")
-                                //actualizar cache votos
-                                const datos_votos_guardar = votaciones.filter(x => !(x.id_nombre == id_nombre && x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
-                                window.sessionStorage.setItem(NAME_DT_LOC_VOTACIONES, JSON.stringify(datos_votos_guardar))
+                    if ((!voto_unico && existe) || (unico_voto_realizado && existe)) {
+                        borrar_votacion_encuesta(id_nombre.toString(), Number(id_seleccionado[0]), Number(id_seleccionado[1])).then(() => {
+                            //mostrar cambios en el html
+                            const id_img = boton.firstElementChild.id
+                            document.querySelector(`#${id_img}`).classList.remove(CLASS_CHECKED_CHECKBOX_VOTO)
+                            document.querySelector(`#${id_img}`).classList.remove(CLASS_SEMIAPARECER_CHECKBOX_VOTO)
+                            document.querySelector(`#${id_img}`).classList.add(CLASS_SEMIDESAPARECER_CHECKBOX_VOTO)
 
-                                const contador_votos = datos_votos_guardar.filter(x => (x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
-                                actualizar_contador(contador_votos.length, id_seleccionado[0], id_seleccionado[1])
-                            })
+                            document.querySelector(`#${PARTE_ID_USAR_OPCION_VOTACION}${id_seleccionado[1]}`).classList.remove(CLASS_OPCION_VOTADA)
+                            document.querySelector(`#${PARTE_ID_USAR_OPCION_VOTACION}${id_seleccionado[1]}`).classList.add(CLASS_OPCION_NO_VOTADA)
+                            //actualizar cache votos
+                            const datos_votos_guardar = votaciones.filter(x => !(x.id_nombre == id_nombre && x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
+                            window.sessionStorage.setItem(NAME_DT_LOC_VOTACIONES, JSON.stringify(datos_votos_guardar))
+
+                            const contador_votos = datos_votos_guardar.filter(x => (x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
+                            actualizar_contador(contador_votos.length, id_seleccionado[0], id_seleccionado[1])
+                        })
+                    }
+                    else if ((!voto_unico && existe) || (!unico_voto_realizado && !existe)) {
+                        let nombre_votante = window.localStorage.getItem(NAME_DT_LOC_NOMBRE_VARIABLE) ? window.localStorage.getItem(NAME_DT_LOC_NOMBRE_VARIABLE) : "anónimo"
+                        nombre_votante = nombre_votante.replace(/\n+/g, "").replace(/\s+/g, " ").replace(/[0-9|.<>,#;]/g, "").replaceAll("no bono", "").replaceAll("(bono)", "").replaceAll("bono", "")
+                        let bono_votante = window.localStorage.getItem(NAME_DT_LOC_BONO_VARIABLE)
+                        if (bono_votante != "true") bono_votante = false
+                        const datos_enviar_voto = {
+                            "id_nombre": id_nombre, "id_encuesta": id_seleccionado[0], "opcion_votada_encuesta": id_seleccionado[1], "nombre_votante": nombre_votante, "bono_votante": Boolean(bono_votante)
                         }
-                        else {//crear voto
-                            let nombre_votante = window.localStorage.getItem(NAME_DT_LOC_NOMBRE_VARIABLE) ? window.localStorage.getItem(NAME_DT_LOC_NOMBRE_VARIABLE) : "anónimo"
-                            nombre_votante = nombre_votante.replace(/\n+/g, "").replace(/\s+/g, " ").replace(/[0-9|.<>,#;]/g, "").replaceAll("no bono", "").replaceAll("(bono)", "").replaceAll("bono", "")
-                            let bono_votante = window.localStorage.getItem(NAME_DT_LOC_BONO_VARIABLE)
-                            if (bono_votante != "true") bono_votante = false
-                            const datos_enviar_voto = {
-                                "id_nombre": id_nombre, "id_encuesta": id_seleccionado[0], "opcion_votada_encuesta": id_seleccionado[1], "nombre_votante": nombre_votante, "bono_votante": Boolean(bono_votante)
-                            }
-                            añadir_votacion_encuesta(datos_enviar_voto).then(() => {
-                                //mostrar cambios en el html
-                                const id_img = boton.firstElementChild.id
-                                document.querySelector(`#${id_img}`).classList.remove(CLASS_SEMIDESAPARECER_CHECKBOX_VOTO)
+                        añadir_votacion_encuesta(datos_enviar_voto).then(() => {
+                            //mostrar cambios en el html
+                            const id_img = boton.firstElementChild.id
+                            document.querySelector(`#${id_img}`).classList.remove(CLASS_SEMIDESAPARECER_CHECKBOX_VOTO)
 
-                                document.querySelector(`#${id_img}`).classList.add(CLASS_CHECKED_CHECKBOX_VOTO)
-                                document.querySelector(`#${PARTE_ID_USAR_OPCION_VOTACION}${id_seleccionado[1]}`).classList.remove("opcion-no-votado")
-                                document.querySelector(`#${PARTE_ID_USAR_OPCION_VOTACION}${id_seleccionado[1]}`).classList.add(CLASS_OPCION_VOTADA)
-                                //actualizar cache votos
-                                const datos_votos_guardar = votaciones
-                                datos_votos_guardar.push({ "id_nombre": String(id_nombre), "id_encuesta": Number(id_seleccionado[0]), "opcion_votada_encuesta": Number(id_seleccionado[1]), "nombre_votante": nombre_votante, "bono_votante": Boolean(bono_votante) })
-                                window.sessionStorage.setItem(NAME_DT_LOC_VOTACIONES, JSON.stringify(datos_votos_guardar))
+                            document.querySelector(`#${id_img}`).classList.add(CLASS_CHECKED_CHECKBOX_VOTO)
+                            document.querySelector(`#${PARTE_ID_USAR_OPCION_VOTACION}${id_seleccionado[1]}`).classList.remove(CLASS_OPCION_NO_VOTADA)
+                            document.querySelector(`#${PARTE_ID_USAR_OPCION_VOTACION}${id_seleccionado[1]}`).classList.add(CLASS_OPCION_VOTADA)
+                            //actualizar cache votos
+                            const datos_votos_guardar = votaciones
+                            datos_votos_guardar.push({ "id_nombre": String(id_nombre), "id_encuesta": Number(id_seleccionado[0]), "opcion_votada_encuesta": Number(id_seleccionado[1]), "nombre_votante": nombre_votante, "bono_votante": Boolean(bono_votante) })
+                            window.sessionStorage.setItem(NAME_DT_LOC_VOTACIONES, JSON.stringify(datos_votos_guardar))
 
-                                const contador_votos = datos_votos_guardar.filter(x => (x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
-                                actualizar_contador(contador_votos.length, id_seleccionado[0], id_seleccionado[1])
-                            })
-
-                        }
+                            const contador_votos = datos_votos_guardar.filter(x => (x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
+                            actualizar_contador(contador_votos.length, id_seleccionado[0], id_seleccionado[1])
+                        })
                     }
                     else {
                         if (unico_voto_realizado.id_encuesta == id_seleccionado[0] && unico_voto_realizado.opcion_votada_encuesta == id_seleccionado[1]) {//es la opcion votada-> borrar
@@ -285,7 +292,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                                 document.querySelector(`#${id_img}`).classList.remove(CLASS_SEMIAPARECER_CHECKBOX_VOTO)
                                 document.querySelector(`#${id_img}`).classList.add(CLASS_SEMIDESAPARECER_CHECKBOX_VOTO)
                                 document.querySelector(`#${PARTE_ID_USAR_OPCION_VOTACION}${id_seleccionado[1]}`).classList.remove(CLASS_OPCION_VOTADA)
-                                document.querySelector(`#${PARTE_ID_USAR_OPCION_VOTACION}${id_seleccionado[1]}`).classList.add("opcion-no-votado")
+                                document.querySelector(`#${PARTE_ID_USAR_OPCION_VOTACION}${id_seleccionado[1]}`).classList.add(CLASS_OPCION_NO_VOTADA)
                                 //actualizar cache votos
                                 const datos_votos_guardar = votaciones.filter(x => !(x.id_nombre == id_nombre && x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
                                 window.sessionStorage.setItem(NAME_DT_LOC_VOTACIONES, JSON.stringify(datos_votos_guardar))
@@ -306,6 +313,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
     //evento analizar datos
     const $bt_analizar_datos = document.querySelector(`#${PARTE_ID_BT_ANALIZAR_DATOS}${encuesta_id}`)
     $bt_analizar_datos.addEventListener("click", () => {
+        const $pagina_datos_analizados_encuesta = document.querySelector(`#${$ID_PAGINA_DATOS_ANALIZAR_VOTACION}`)
         $bt_analizar_datos.style.cursor = "progress"//puntero cargando
         conseguir_datos_SUPABASE({ "encuesta_id": encuesta_id, "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuesta => {
             conseguir_datos_SUPABASE({ "encuesta_id": encuesta_id, "tabla": NOMBRE_TABLA_VOTACIONES }).then(votaciones => {
@@ -356,7 +364,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                         })
                         let usuarios = ``
                         if (usuario_datos.anonimos.totales != 0) {
-                            usuarios += `*anónimos (bonos: ${usuario_datos.anonimos.bonos} de ${usuario_datos.anonimos.totales})`
+                            usuarios += `*${VALOR_DEFECTO_NOMBRE_USUARIO} (bonos: ${usuario_datos.anonimos.bonos} de ${usuario_datos.anonimos.totales})`
                             if (usuario_datos.identificados.length != 0) {
                                 usuarios += "</br>"
                             }
@@ -372,7 +380,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                     return html
                 }
 
-                const $pagina_datos_analizados_encuesta = document.querySelector("#pagina-datos-analizados-encuesta")
+
                 $pagina_datos_analizados_encuesta.innerHTML = `<div class="head-pagina-datos"><div><h3>${encuesta[0].titulo}</h3></div><span id="bt-salir-pagina-datos">Salir</span></div>
                     <table>
                     <caption><strong>Recuento de votos</strong></br>(más a menos votado)</caption>
@@ -385,12 +393,12 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
 
                 //mostrar página flotante
                 const $alineador_pagina_datos_analizados_encuesta = document.querySelector("#alineador-pagina-datos-analizados-encuesta")
-                $alineador_pagina_datos_analizados_encuesta.classList.remove("display-none")
-                $alineador_pagina_datos_analizados_encuesta.classList.add("flex")
+                $alineador_pagina_datos_analizados_encuesta.classList.remove(CLASS_DISPLAY_NONE)
+                $alineador_pagina_datos_analizados_encuesta.classList.add(CLASS_DISPLAY_FLEX)
                 //eventos salir
                 document.querySelector("#bt-salir-pagina-datos").addEventListener("click", () => {
-                    $alineador_pagina_datos_analizados_encuesta.classList.remove("flex")
-                    $alineador_pagina_datos_analizados_encuesta.classList.add("display-none")
+                    $alineador_pagina_datos_analizados_encuesta.classList.remove(CLASS_DISPLAY_FLEX)
+                    $alineador_pagina_datos_analizados_encuesta.classList.add(CLASS_DISPLAY_NONE)
                 })
             })
         })
@@ -402,14 +410,14 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
         contador.addEventListener("mouseenter", () => {
             timeEvent = setTimeout(() => {
                 clearTimeout(timeEvent2)
-                if (document.querySelector('#mini-analisis-opcion')) {
-                    document.querySelectorAll('.mini-analisis-opcion').forEach(item => {
+                if (document.querySelector(`#${$MINI_ANALISIS_DATOS}`)) {
+                    document.querySelectorAll(`.${$MINI_ANALISIS_DATOS}`).forEach(item => {
                         item.remove()
                     })
                 }
                 let id = contador.id.replace(PARTE_ID_CONTADOR_VOTANTES, "").split("-")//[id encuesta,opcion encuesta]
                 function mostrar_datos_resumen(contador, contador_bono, nombres_mostrar) {
-                    document.querySelector("#main").insertAdjacentHTML("afterend", `<div  id="mini-analisis-opcion"class="mini-analisis-opcion aparecer">
+                    document.querySelector("#main").insertAdjacentHTML("afterend", `<div  id="${$MINI_ANALISIS_DATOS}"class="${$MINI_ANALISIS_DATOS} ${CLASS_APARECER_CHECKBOX_VOTO}">
                         <table>
                         <tr>
                         <td>Votos</td>
@@ -444,7 +452,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                         if (e.id_encuesta == id[0] && e.opcion_votada_encuesta == id[1]) {
                             if (e.bono_votante) contador_bono++
                             contador++
-                            if (e.nombre_votante != "anónimo") {
+                            if (e.nombre_votante != VALOR_DEFECTO_NOMBRE_USUARIO) {
                                 nombres.identificados.push(e.nombre_votante)
                             }
                             else {
@@ -455,7 +463,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                     })
                     let nombres_mostrar = ""
                     if (nombres.anonimos != 0) {
-                        nombres_mostrar = `anónimos: ${nombres.anonimos}`
+                        nombres_mostrar = `${VALOR_DEFECTO_NOMBRE_USUARIO}: ${nombres.anonimos}`
                     }
                     let primero = true
                     nombres.identificados.forEach(n => {
@@ -468,15 +476,6 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                         }
 
                     })
-                    //crear datos guardado para evitar todo el proceso (ultimas 5 opciones vistas)
-                    //se pasa del limite?->primero borramos y luego añadimos (por si la memoria esta justa no tener problemas)
-                    const limite_opciones_guardadas = 10
-                    if (datos_guardado.length >= limite_opciones_guardadas) {//esta en el limite(borrar el primero porque es el mas viejo creado)
-                        datos_guardado.opciones.shift()
-                    }
-                    //añadir datos
-                    datos_guardado.push({ "id": id[0], "opcion": id[1], "datos": { "contador": contador, "contador_bono": contador_bono, "nombres_mostrar": nombres_mostrar } })
-                    window.sessionStorage.setItem("datos_guardado_encuestas_opciones_ultimas", JSON.stringify(datos_guardado))
                     //mostrar datos
                     mostrar_datos_resumen(contador, contador_bono, nombres_mostrar)
                 }
@@ -485,12 +484,12 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
         })
         contador.addEventListener("mouseleave", () => {
             clearTimeout(timeEvent)
-            if (document.querySelector('#mini-analisis-opcion')) {
-                document.querySelector("#mini-analisis-opcion").classList.remove("aparecer")
-                document.querySelector("#mini-analisis-opcion").classList.add("desaparecer")
-                document.querySelector('#mini-analisis-opcion').addEventListener("transitionend", () => {
-                    if (getComputedStyle(document.querySelector('#mini-analisis-opcion')).opacity === "0") {
-                        document.querySelector('#mini-analisis-opcion').style.display = "none";
+            if (document.querySelector(`#${$MINI_ANALISIS_DATOS}`)) {
+                document.querySelector(`#${$MINI_ANALISIS_DATOS}`).classList.remove(CLASS_APARECER_CHECKBOX_VOTO)
+                document.querySelector(`#${$MINI_ANALISIS_DATOS}`).classList.add(CLASS_DESAPARECER_CHECKBOX_VOTO)
+                document.querySelector(`#${$MINI_ANALISIS_DATOS}`).addEventListener("transitionend", () => {
+                    if (getComputedStyle(document.querySelector(`#${$MINI_ANALISIS_DATOS}`)).opacity === "0") {
+                        document.querySelector(`#${$MINI_ANALISIS_DATOS}`).style.display = "none";
                     }
                 })
             }
