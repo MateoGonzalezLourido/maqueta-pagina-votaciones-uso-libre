@@ -12,9 +12,7 @@ cosigo fácil de adaptar
 #*Tecnologías usadas:
 
 Vite
-
 js/html/css
-
 supabase
 
 #*Como usarlo:
