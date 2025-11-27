@@ -9,7 +9,7 @@ const NAME_DT_LOC_BONO_VARIABLE = "bono_variable"
 const NAME_DT_LOC_NOMBRE_VARIABLE = "nombre_variable"
 //valores por defecto
 const VALOR_DEFECTO_NOMBRE_USUARIO = "anónimo"
-const VALOR_DEFECTO_BONO_USUARIO = false
+const VALOR_DEFECTO_BONO_USUARIO = "false"
 //clases
 const CLASS_CERRAR_MENU = "cerrado"
 const CLASS_ABRIR_MENU = "abierto"
@@ -79,8 +79,8 @@ function actualizar_nombre() {
 }
 
 function actualizar_bono() {
-    const valor_repuesto = !window.localStorage.getItem(NAME_DT_LOC_BONO_VARIABLE) ? VALOR_DEFECTO_BONO_USUARIO : window.localStorage.getItem(NAME_DT_LOC_BONO_VARIABLE)
-    const valor = $bono_usuario.checked ? $bono_usuario.checked : valor_repuesto
+    const valor_repuesto = !(window.localStorage.getItem(NAME_DT_LOC_BONO_VARIABLE) )? VALOR_DEFECTO_BONO_USUARIO : window.localStorage.getItem(NAME_DT_LOC_BONO_VARIABLE)
+    const valor = $bono_usuario.checked==true ? true :false
     //parchear
     try {//intentar actualizar
         window.localStorage.setItem(NAME_DT_LOC_BONO_VARIABLE, valor.toString())
