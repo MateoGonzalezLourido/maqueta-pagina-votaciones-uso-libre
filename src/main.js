@@ -4,7 +4,6 @@ import './scripts/votaciones.js'
 
 
 import { injectSpeedInsights } from '@vercel/speed-insights';
-
 injectSpeedInsights();
 /*CODIGO */
 const URL_REPOSITORIO_ORIGINAL = "https://github.com/MateoGonzalezLourido/maqueta-pagina-votaciones-uso-libre"
