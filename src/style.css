@@ -458,3 +458,12 @@ footer {
   pointer-events: auto; /* Mantener click útil */
 
 }
+
+.opcion-votado{
+  background-color: #13342936;
+  transition: 0.3s;
+}
+.opcion-no-votado{
+  background-color: transparent;
+  transition: 0.3s;
+}

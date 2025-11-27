@@ -1,6 +1,10 @@
 import { supabase } from '../supabase/supabase'
 import { getBrowserFingerprint } from './datos_usuario_control.js'
 
+/*TODAS LAS VARIABLES O FUNCIONES PARA HACERLAS MAS ACCESIBLES */
+
+
+
 const conseguir_datos_encuesta = async (encuesta_id) => {
     if (encuesta_id) {
         const { data, error } = await supabase
@@ -248,6 +252,9 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                                 document.querySelector(`#${id_img}`).classList.remove("checked")
                                 document.querySelector(`#${id_img}`).classList.remove("semi-aparecer")
                                 document.querySelector(`#${id_img}`).classList.add("semi-desaparecer")
+
+                                document.querySelector(`#opcion-encuesta-${id_seleccionado[1]}`).classList.remove("opcion-votado")
+                                document.querySelector(`#opcion-encuesta-${id_seleccionado[1]}`).classList.add("opcion-no-votado")
                                 //actualizar cache votos
                                 const datos_votos_guardar = votaciones.filter(x => !(x.id_nombre == id_nombre && x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
                                 window.sessionStorage.setItem("votaciones", JSON.stringify(datos_votos_guardar))
@@ -270,6 +277,8 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                                 document.querySelector(`#${id_img}`).classList.remove("semi-desaparecer")
 
                                 document.querySelector(`#${id_img}`).classList.add("checked")
+                                document.querySelector(`#opcion-encuesta-${id_seleccionado[1]}`).classList.remove("opcion-no-votado")
+                                document.querySelector(`#opcion-encuesta-${id_seleccionado[1]}`).classList.add("opcion-votado")
                                 //actualizar cache votos
                                 const datos_votos_guardar = votaciones
                                 datos_votos_guardar.push({ "id_nombre": String(id_nombre), "id_encuesta": Number(id_seleccionado[0]), "opcion_votada_encuesta": Number(id_seleccionado[1]), "nombre_votante": nombre_votante, "bono_votante": Boolean(bono_votante) })
@@ -289,6 +298,8 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                                 document.querySelector(`#${id_img}`).classList.remove("checked")
                                 document.querySelector(`#${id_img}`).classList.remove("semi-aparecer")
                                 document.querySelector(`#${id_img}`).classList.add("semi-desaparecer")
+                                document.querySelector(`#opcion-encuesta-${id_seleccionado[1]}`).classList.remove("opcion-votado")
+                                document.querySelector(`#opcion-encuesta-${id_seleccionado[1]}`).classList.add("opcion-no-votado")
                                 //actualizar cache votos
                                 const datos_votos_guardar = votaciones.filter(x => !(x.id_nombre == id_nombre && x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
                                 window.sessionStorage.setItem("votaciones", JSON.stringify(datos_votos_guardar))
