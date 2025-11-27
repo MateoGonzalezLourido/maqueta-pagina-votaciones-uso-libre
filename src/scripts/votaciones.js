@@ -260,9 +260,9 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                             let nombre_votante = window.localStorage.getItem("nombre_variable") ? window.localStorage.getItem("nombre_variable") : "anónimo"
                             nombre_votante = nombre_votante.replace(/\n+/g, "").replace(/\s+/g, " ").replace(/[0-9|.<>,#;]/g, "").replaceAll("no bono", "").replaceAll("(bono)", "").replaceAll("bono", "")
                             let bono_votante = window.localStorage.getItem("bono_variable")
-                            if (bono_votante != true) bono_votante = false
+                            if (bono_votante != "true") bono_votante = false
                             const datos_enviar_voto = {
-                                "id_nombre": id_nombre, "id_encuesta": id_seleccionado[0], "opcion_votada_encuesta": id_seleccionado[1], "nombre_votante": nombre_votante, "bono_votante": bono_votante
+                                "id_nombre": id_nombre, "id_encuesta": id_seleccionado[0], "opcion_votada_encuesta": id_seleccionado[1], "nombre_votante": nombre_votante, "bono_votante": Boolean(bono_votante)
                             }
                             añadir_votacion_encuesta(datos_enviar_voto).then(() => {
                                 //mostrar cambios en el html
