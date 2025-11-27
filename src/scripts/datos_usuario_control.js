@@ -80,10 +80,10 @@ function actualizar_nombre() {
 
 function actualizar_bono() {
     const valor_repuesto = !(window.localStorage.getItem(NAME_DT_LOC_BONO_VARIABLE) )? VALOR_DEFECTO_BONO_USUARIO : window.localStorage.getItem(NAME_DT_LOC_BONO_VARIABLE)
-    const valor = $bono_usuario.checked==true ? true :false
+    const valor = $bono_usuario.checked==true ? "true" :"false"
     //parchear
     try {//intentar actualizar
-        window.localStorage.setItem(NAME_DT_LOC_BONO_VARIABLE, valor.toString())
+        window.localStorage.setItem(NAME_DT_LOC_BONO_VARIABLE, valor)
     }
     catch {//establecer el anterior
         window.localStorage.setItem(NAME_DT_LOC_BONO_VARIABLE, valor_repuesto)
