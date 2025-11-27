@@ -1,0 +1,527 @@
+import { supabase } from '../supabase/supabase'
+import { getBrowserFingerprint } from './datos_usuario_control.js'
+
+const conseguir_datos_encuesta = async (encuesta_id) => {
+    if (encuesta_id) {
+        const { data, error } = await supabase
+            .from('encuestas')
+            .select("*")
+            .eq("id_encuesta", encuesta_id)
+
+        if (error) {
+            console.log("Error al recibir datos encuestas:", error)
+            return []
+        }
+        if (data.length == 0) {
+            console.log("No hay encuestas!")
+        }
+        else {
+            if (data[0].opciones.length == 0) {
+                console.log("No hay opciones!")
+            }
+        }
+        return data
+    }
+    else {
+        const { data, error } = await supabase
+            .from('encuestas')
+            .select("*");
+        if (error) {
+            console.log("Error al recibir datos encuestas:", error)
+            return []
+        }
+        if (data.length == 0) {
+            console.log("No hay encuestas!")
+        }
+        return data
+    }
+}
+const conseguir_datos_votaciones_encuesta = async (encuesta_id) => {
+    if (encuesta_id) {
+        const { data, error } = await supabase
+            .from('encuestas_votaciones')
+            .select("*")
+            .eq("id_encuesta", encuesta_id)
+
+        if (error) {
+            console.log("Error al recibir datos votaciones:", error)
+            return []
+        }
+        return data
+    }
+    else {
+        const { data, error } = await supabase
+            .from('encuestas_votaciones')
+            .select("*");
+        if (error) {
+            console.log("Error al recibir datos votaciones:", error)
+            return []
+        }
+        return data
+    }
+}
+const borrar_votacion_encuesta = async (id_nombre, id_encuesta, opcion_votada_encuesta) => {
+    const { error } = await supabase
+        .from('encuestas_votaciones')
+        .delete()
+        .eq('id_nombre', id_nombre)
+        .eq('id_encuesta', id_encuesta)
+        .eq("opcion_votada_encuesta", opcion_votada_encuesta);
+
+    if (error) {
+        console.error("Error al borrar el voto:", error)
+    }
+}
+const añadir_votacion_encuesta = async ({ id_nombre, id_encuesta, opcion_votada_encuesta, nombre_votante, bono_votante }) => {
+    const { error } = await supabase
+        .from('encuestas_votaciones')
+        .insert([
+            {
+                "id_nombre": id_nombre,
+                "id_encuesta": id_encuesta,
+                "opcion_votada_encuesta": opcion_votada_encuesta,
+                "nombre_votante": nombre_votante,
+                "bono_votante": bono_votante
+            }
+        ]);
+
+    if (error) {
+        console.error("Error al añadir voto:", error);
+    }
+}
+const generar_titulos_encuestas = (data, encuesta_id) => {
+    let html = ``
+    data.forEach(encuesta => {
+        let principal = ""
+        if (encuesta_id == encuesta.id_encuesta) {//poner una encuesta como principal (la que se seleccionó)
+            principal = "selected"
+        }
+        html += `<option value="${encuesta.titulo}" ${principal}>${encuesta.titulo}</option>`
+    })
+    return html
+}
+const generar_opciones_encuestas = (encuestas, encuesta_id, contador_votaciones, opciones_votadas = []) => {
+    let html_opciones = ``
+    encuestas.forEach(encuesta => {//para buscar la encuesta que esta seleccionada
+        if (encuesta.id_encuesta == encuesta_id) {//esta es la encuesta que estamos mirando
+            for (let i = 0; i < encuesta.opciones.length; i++) {//para mostrar las opciones de la encuesta seleccionada
+                //mirar si votaste esa opcion
+                let checked = false
+                if (opciones_votadas != undefined && opciones_votadas.length >= 1) {
+                    checked = opciones_votadas.find(x => x == i)
+                    if (checked != undefined) checked = true
+                }
+                //mirar que indice del contador corresponde
+                let indice = -1
+                if (contador_votaciones != undefined) {
+                    indice = contador_votaciones.findIndex(x => x.id == i)
+                }
+                let contador = 0
+                if (indice != -1 && contador_votaciones != undefined) {
+                    contador = contador_votaciones[indice].votantes.length
+                }
+                //terminar de arreglar por que no aparecen marcados desde el inicio
+                const display = checked ? "block" : "none"
+                const clase = display == "block" ? "checked" : "semi-desaparecer"
+                html_opciones += `<div class="opcion-votacion"id="opcion-encuesta-${i}">
+                            <div>
+                                <h3>${encuesta.opciones[i]}</h3>
+                                <span class="text-contador-votos" id="numero-votantes-bt-lista-${encuesta.id_encuesta}-${i}">*Votos: ${contador}</span>
+                            </div>
+                            <div class="sub-2" id="checkbox-opcion-encuesta-${encuesta.id_encuesta}-${i}">
+                            <img  id="img-check-votado-${encuesta.id_encuesta}-${i}" class="img-checked ${clase}"src="/public/checked.svg" alt=""draggable="false" loading="lazy">
+                            </div>
+                </div>`
+            }
+        }
+    })
+    return html_opciones
+}
+function contador_votos(votaciones) {
+    let contador_votaciones = []
+    votaciones.forEach(vt => {
+        //buscar si ya existe registro
+        const indice = contador_votaciones.findIndex(x => x.id == vt.opcion_votada_encuesta)
+        if (indice != -1) {//contar voto
+            contador_votaciones[indice].votantes.push({ "nombre": vt.nombre_votante, "bono": vt.bono_votante })
+        }
+        else {//crear registro
+            contador_votaciones.push({
+                "id": vt.opcion_votada_encuesta,
+                "votantes": [{ "nombre": vt.nombre_votante, "bono": vt.bono_votante }]
+            })
+        }
+    })
+    return contador_votaciones
+}
+function mirar_opciones_votadas(votaciones) {
+    let opciones_votadas = []
+    //mirar que opciones votaste(usando usuario)
+    const id = getBrowserFingerprint()
+    window.sessionStorage.setItem("id_unique_nombre", id.toString())
+    votaciones.forEach(vt => {
+        if (vt.id_nombre == id) {
+            opciones_votadas.push(vt.opcion_votada_encuesta)
+        }
+    })
+    return opciones_votadas
+}
+function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_votadas) {
+    let voto_unico = data.find(x => x.id_encuesta == encuesta_id)
+    voto_unico = voto_unico.voto_unico ? "*voto único" : "*voto múltiple"
+    const $id_select_encuestas = "select-encuestas"
+    document.querySelector("#main").innerHTML = `
+        <select id="${$id_select_encuestas}">
+        ${generar_titulos_encuestas(data, encuesta_id)}
+        </select>
+        <div class="div-juntar-todo-cuerpo-opciones">
+        <span class="tipo-voto">${voto_unico}</span>
+        <section id="cuerpo-opciones">
+        ${generar_opciones_encuestas(data, encuesta_id, contador_votaciones, opciones_votadas)}
+        </section></div>
+        <section id="datos-analizar">
+        <button id="bt-analizar-datos-encuesta-${encuesta_id}" class="bt-analizar-datos">Analizar Datos</button>
+        </section>
+        `
+    //evento cambio de encuesta
+    document.querySelector(`#${$id_select_encuestas}`).addEventListener("change", (e) => {
+        const titulo_escogido = e.target.value
+        const encuesta_escogida = data.find(x => x.titulo == titulo_escogido)
+        //registro de votos: hacer un recuento de los datos separados por opcion
+        conseguir_datos_votaciones_encuesta(encuesta_escogida.id_encuesta).then((votaciones) => {
+            let contador_votaciones = contador_votos(votaciones, encuesta_escogida.id_encuesta)
+            let opciones_votadas = mirar_opciones_votadas(votaciones, encuesta_escogida.id_encuesta)
+            //crear datos guardado de las votaciones de la encuesta para reducir solicitudes a la base de datos
+            window.sessionStorage.setItem("votaciones", JSON.stringify(votaciones))
+            //actualizar pagina
+            generar_encuestas(data, encuesta_escogida.id_encuesta, contador_votaciones, opciones_votadas)
+        })
+    })
+    //evento opciones votar 
+    document.querySelectorAll(".sub-2").forEach(boton => {
+        //animacion de los checkbox
+        const id_img = boton.firstElementChild.id
+        boton.addEventListener("mouseenter", () => {
+            if (!document.querySelector(`#${id_img}`).classList.contains("checked")) {
+                document.querySelector(`#${id_img}`).style.display = "block"
+                document.querySelector(`#${id_img}`).classList.remove("semi-desaparecer")
+                document.querySelector(`#${id_img}`).classList.add("semi-aparecer")
+            }
+        })
+        boton.addEventListener("mouseleave", () => {
+            if (!document.querySelector(`#${id_img}`).classList.contains("checked")) {
+                document.querySelector(`#${id_img}`).classList.remove("semi-aparecer")
+                document.querySelector(`#${id_img}`).classList.add("semi-desaparecer")
+            }
+        })
+        boton.addEventListener("transitionend", () => {
+            if (getComputedStyle(document.querySelector(`#${id_img}`)).opacity == "0") {
+                document.querySelector(`#${id_img}`).style.display = "none";
+            }
+            else {
+                document.querySelector(`#${id_img}`).style.display = "block";
+            }
+        })
+        //evento votar
+
+        boton.addEventListener("click", (e) => {
+            const id_seleccionado = (e.target.id).replace("checkbox-opcion-encuesta-", "").replace("img-check-votado-", "").split("-") //[id encuesta,opcion encuesta]
+            function votar(voto_unico) {
+                function actualizar_contador(contador, id_encuesta, opcion_votada) {
+                    //actualizar contador votos
+                    const id_contador = `numero-votantes-bt-lista-${id_encuesta}-${opcion_votada}`
+                    document.querySelector(`#${id_contador}`).innerHTML = "*Votos: " + contador
+                }
+                const id_nombre = getBrowserFingerprint()
+                //ver si ya existe ese voto
+                conseguir_datos_votaciones_encuesta(encuesta_id).then(votaciones => {
+                    let existe = votaciones.find(x => x.id_nombre == id_nombre && x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1])
+                    let unico_voto_realizado;
+                    if (voto_unico) {
+                        unico_voto_realizado = votaciones.find(x => x.id_nombre == id_nombre && x.id_encuesta == id_seleccionado[0])
+                    }
+                    if (!voto_unico || (voto_unico && !unico_voto_realizado)) {
+                        if (existe) {//ya se ha botado -> borrar de la base de datos
+                            borrar_votacion_encuesta(id_nombre.toString(), Number(id_seleccionado[0]), Number(id_seleccionado[1])).then(() => {
+                                //mostrar cambios en el html
+                                const id_img = boton.firstElementChild.id
+                                document.querySelector(`#${id_img}`).classList.remove("checked")
+                                document.querySelector(`#${id_img}`).classList.remove("semi-aparecer")
+                                document.querySelector(`#${id_img}`).classList.add("semi-desaparecer")
+                                //actualizar cache votos
+                                const datos_votos_guardar = votaciones.filter(x => !(x.id_nombre == id_nombre && x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
+                                window.sessionStorage.setItem("votaciones", JSON.stringify(datos_votos_guardar))
+
+                                const contador_votos = datos_votos_guardar.filter(x => (x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
+                                actualizar_contador(contador_votos.length, id_seleccionado[0], id_seleccionado[1])
+                            })
+                        }
+                        else {//crear voto
+                            let nombre_votante = window.localStorage.getItem("nombre_variable") ? window.localStorage.getItem("nombre_variable") : "anónimo"
+                            nombre_votante = nombre_votante.replace(/\n+/g, "").replace(/\s+/g, " ").replace(/[0-9|.<>,#;]/g, "").replaceAll("no bono", "").replaceAll("(bono)", "").replaceAll("bono", "")
+                            let bono_votante = window.localStorage.getItem("bono_variable")
+                            if (bono_votante != true) bono_votante = false
+                            const datos_enviar_voto = {
+                                "id_nombre": id_nombre, "id_encuesta": id_seleccionado[0], "opcion_votada_encuesta": id_seleccionado[1], "nombre_votante": nombre_votante, "bono_votante": bono_votante
+                            }
+                            añadir_votacion_encuesta(datos_enviar_voto).then(() => {
+                                //mostrar cambios en el html
+                                const id_img = boton.firstElementChild.id
+                                document.querySelector(`#${id_img}`).classList.remove("semi-desaparecer")
+
+                                document.querySelector(`#${id_img}`).classList.add("checked")
+                                //actualizar cache votos
+                                const datos_votos_guardar = votaciones
+                                datos_votos_guardar.push({ "id_nombre": String(id_nombre), "id_encuesta": Number(id_seleccionado[0]), "opcion_votada_encuesta": Number(id_seleccionado[1]), "nombre_votante": nombre_votante, "bono_votante": Boolean(bono_votante) })
+                                window.sessionStorage.setItem("votaciones", JSON.stringify(datos_votos_guardar))
+
+                                const contador_votos = datos_votos_guardar.filter(x => (x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
+                                actualizar_contador(contador_votos.length, id_seleccionado[0], id_seleccionado[1])
+                            })
+
+                        }
+                    }
+                    else {
+                        if (unico_voto_realizado.id_encuesta == id_seleccionado[0] && unico_voto_realizado.opcion_votada_encuesta == id_seleccionado[1]) {//es la opcion votada-> borrar
+                            borrar_votacion_encuesta(id_nombre.toString(), Number(id_seleccionado[0]), Number(id_seleccionado[1])).then(() => {
+                                //mostrar cambios en el html
+                                const id_img = boton.firstElementChild.id
+                                document.querySelector(`#${id_img}`).classList.remove("checked")
+                                document.querySelector(`#${id_img}`).classList.remove("semi-aparecer")
+                                document.querySelector(`#${id_img}`).classList.add("semi-desaparecer")
+                                //actualizar cache votos
+                                const datos_votos_guardar = votaciones.filter(x => !(x.id_nombre == id_nombre && x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
+                                window.sessionStorage.setItem("votaciones", JSON.stringify(datos_votos_guardar))
+
+                                const contador_votos = datos_votos_guardar.filter(x => (x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
+                                actualizar_contador(contador_votos.length, id_seleccionado[0], id_seleccionado[1])
+                            })
+                        }
+                    }
+                })
+            }
+            conseguir_datos_encuesta(id_seleccionado[0]).then(encuesta => {
+                votar(encuesta[0].voto_unico)
+            })
+        })
+    })
+
+    //evento analizar datos
+    const $bt_analizar_datos = document.querySelector(`#bt-analizar-datos-encuesta-${encuesta_id}`)
+    $bt_analizar_datos.addEventListener("click", () => {
+        $bt_analizar_datos.style.cursor = "progress"//puntero cargando
+        conseguir_datos_encuesta(encuesta_id).then(encuesta => {
+            conseguir_datos_votaciones_encuesta(encuesta_id).then(votaciones => {
+                $bt_analizar_datos.style.cursor = "pointer"//quitar puntero cargando
+                const contador_votaciones = contador_votos(votaciones)
+                const mostrar_recuento_votos = () => {
+                    let html = ``
+                    html += `<tr><td>Opción</td><td>nºvotos</td><td>nºbonos</br>(confirmados)</td></tr>`
+                    let opciones_ordenadas_mayor = contador_votaciones.sort((x, y) => y.votantes.length - x.votantes.length)
+                    opciones_ordenadas_mayor.forEach(datos_op => {
+                        let recuento_bonos = 0
+                        datos_op.votantes.forEach(vt => {
+                            if (vt.bono) recuento_bonos++
+                        })
+                        html += `<tr>
+                            <td>${encuesta[0].opciones[datos_op.id]}</td>
+                            <td>${[datos_op.votantes.length]}</td>
+                            <td>${recuento_bonos}</td>
+                            </tr>`
+                    })
+                    return html
+                }
+                const mostrar_nombre_votantes = () => {
+                    let html = ``
+                    html += `<tr><td>Opción</td><td>Votantes</td></tr>`
+                    let opciones_ordenadas_mayor = contador_votaciones.sort((x, y) => y.votantes.length - x.votantes.length)
+                    opciones_ordenadas_mayor.forEach(datos_op => {
+                        let usuario_datos = {
+                            "identificados": [],
+                            "anonimos": {
+                                "totales": 0,
+                                "bonos": 0
+                            }
+                        }
+                        datos_op.votantes.forEach(vt => {
+                            if (vt.nombre != "anónimo") {
+                                if (vt.bono == true) {
+                                    usuario_datos.identificados.push(`${vt.nombre}(bono)`)
+                                }
+                                else {
+                                    usuario_datos.identificados.push(vt.nombre)
+                                }
+                            }
+                            else {
+                                usuario_datos.anonimos.totales++
+                                if (vt.bono == true) usuario_datos.anonimos.bonos++
+                            }
+                        })
+                        let usuarios = ``
+                        if (usuario_datos.anonimos.totales != 0) {
+                            usuarios += `*anónimos (bonos: ${usuario_datos.anonimos.bonos} de ${usuario_datos.anonimos.totales})`
+                            if (usuario_datos.identificados.length != 0) {
+                                usuarios += "</br>"
+                            }
+                        }
+                        usuario_datos.identificados.forEach(us => {
+                            usuarios += `${us}</br>`
+                        })
+                        html += `<tr>
+                            <td>${encuesta[0].opciones[datos_op.id]}</td>
+                            <td>${usuarios}</td>
+                            </tr>`
+                    })
+                    return html
+                }
+
+                const $pagina_datos_analizados_encuesta = document.querySelector("#pagina-datos-analizados-encuesta")
+                $pagina_datos_analizados_encuesta.innerHTML = `<div class="head-pagina-datos"><div><h3>${encuesta[0].titulo}</h3></div><span id="bt-salir-pagina-datos">Salir</span></div>
+                    <table>
+                    <caption><strong>Recuento de votos</strong></br>(más a menos votado)</caption>
+                    ${mostrar_recuento_votos()}
+                    </table>
+                    <table>
+                    <caption><strong>Votantes</strong> (más a menos votado)</caption>
+                    ${mostrar_nombre_votantes()}
+                    </table>`
+
+                //mostrar página flotante
+                const $alineador_pagina_datos_analizados_encuesta = document.querySelector("#alineador-pagina-datos-analizados-encuesta")
+                $alineador_pagina_datos_analizados_encuesta.classList.remove("display-none")
+                $alineador_pagina_datos_analizados_encuesta.classList.add("flex")
+                //eventos salir
+                document.querySelector("#bt-salir-pagina-datos").addEventListener("click", () => {
+                    $alineador_pagina_datos_analizados_encuesta.classList.remove("flex")
+                    $alineador_pagina_datos_analizados_encuesta.classList.add("display-none")
+                })
+            })
+        })
+    })
+    //evento ver datos opcion
+    document.querySelectorAll(".text-contador-votos").forEach(contador => {
+        let timeEvent;
+        let timeEvent2;
+        contador.addEventListener("mouseenter", () => {
+            timeEvent = setTimeout(() => {
+                clearTimeout(timeEvent2)
+                if (document.querySelector('#mini-analisis-opcion')) {
+                    document.querySelectorAll('.mini-analisis-opcion').forEach(item => {
+                        item.remove()
+                    })
+                }
+                let id = contador.id.replace("numero-votantes-bt-lista-", "").split("-")//[id encuesta,opcion encuesta]
+                function mostrar_datos_resumen(contador, contador_bono, nombres_mostrar) {
+                    document.querySelector("#main").insertAdjacentHTML("afterend", `<div  id="mini-analisis-opcion"class="mini-analisis-opcion aparecer">
+                        <table>
+                        <tr>
+                        <td>Votos</td>
+                        <td>Bonos</td>
+                        <td>Nombres</td>
+                        </tr>
+                        <tr>
+                        <td >${contador}</td>
+                        <td>${contador_bono}</td>
+                        <td>${nombres_mostrar}</td>
+                        </tr>
+                        </table>
+                            </div>`)
+                }
+                //mirar si ya hay datos creados
+                let datos_guardado = window.sessionStorage.getItem("votaciones") ? JSON.parse(window.sessionStorage.getItem("votaciones")) : []
+
+                //mirar si existe datos sobre mi encuesta-opcion
+                const datos_opcion_buscar = datos_guardado.find(x => x.id == id[0] && x.opcion == id[1])
+                if (datos_opcion_buscar) {//existen datos de guardado
+                    mostrar_datos_resumen(datos_opcion_buscar.datos.contador, datos_opcion_buscar.datos.contador_bono, datos_opcion_buscar.datos.nombres_mostrar)
+                }
+                else {//no existe: crear + actualizar
+                    const votaciones = JSON.parse(window.sessionStorage.getItem("votaciones")) //acceder a los datos de guardado de las votaciones
+                    let contador = 0
+                    let contador_bono = 0
+                    let nombres = {
+                        "anonimos": 0,
+                        "identificados": []
+                    }
+                    votaciones.forEach(e => {
+                        if (e.id_encuesta == id[0] && e.opcion_votada_encuesta == id[1]) {
+                            if (e.bono_votante) contador_bono++
+                            contador++
+                            if (e.nombre_votante != "anónimo") {
+                                nombres.identificados.push(e.nombre_votante)
+                            }
+                            else {
+                                nombres.anonimos++
+                            }
+                        }
+
+                    })
+                    let nombres_mostrar = ""
+                    if (nombres.anonimos != 0) {
+                        nombres_mostrar = `anónimos: ${nombres.anonimos}`
+                    }
+                    let primero = true
+                    nombres.identificados.forEach(n => {
+                        if (primero && nombres.anonimos == 0) {
+                            nombres_mostrar += `${n}`
+                            primero = false
+                        }
+                        else {
+                            nombres_mostrar += `</br>${n}`
+                        }
+
+                    })
+                    //crear datos guardado para evitar todo el proceso (ultimas 5 opciones vistas)
+                    //se pasa del limite?->primero borramos y luego añadimos (por si la memoria esta justa no tener problemas)
+                    const limite_opciones_guardadas = 10
+                    if (datos_guardado.length >= limite_opciones_guardadas) {//esta en el limite(borrar el primero porque es el mas viejo creado)
+                        datos_guardado.opciones.shift()
+                    }
+                    //añadir datos
+                    datos_guardado.push({ "id": id[0], "opcion": id[1], "datos": { "contador": contador, "contador_bono": contador_bono, "nombres_mostrar": nombres_mostrar } })
+                    window.sessionStorage.setItem("datos_guardado_encuestas_opciones_ultimas", JSON.stringify(datos_guardado))
+                    //mostrar datos
+                    mostrar_datos_resumen(contador, contador_bono, nombres_mostrar)
+                }
+            }, 1500)
+
+        })
+        contador.addEventListener("mouseleave", () => {
+            clearTimeout(timeEvent)
+            if (document.querySelector('#mini-analisis-opcion')) {
+                document.querySelector("#mini-analisis-opcion").classList.remove("aparecer")
+                document.querySelector("#mini-analisis-opcion").classList.add("desaparecer")
+                document.querySelector('#mini-analisis-opcion').addEventListener("transitionend", () => {
+                    if (getComputedStyle(document.querySelector('#mini-analisis-opcion')).opacity === "0") {
+                        document.querySelector('#mini-analisis-opcion').style.display = "none";
+                    }
+                })
+            }
+        })
+
+    })
+}
+
+globalThis.addEventListener("DOMContentLoaded", () => {
+    conseguir_datos_encuesta().then(data => {
+        //escoger una encuesta como principal(si hay solo una principal esa es, sino se coge la primera que llegue)
+        //esto se hace solo al inicio, luego solo se pone la que se seleccione
+        let encuesta_id = data.find(x => x.principal == true)
+        if (!encuesta_id) {
+            encuesta_id = data[0].id_encuesta
+        }
+        else {
+            encuesta_id = encuesta_id.id_encuesta
+        }
+        conseguir_datos_votaciones_encuesta(encuesta_id).then((votaciones) => {
+            //registro de votos: hacer un recuento de los datos separados por opcion
+            let contador_votaciones = contador_votos(votaciones)
+            //crear/mostrar opciones de la encuesta para votar y sus votos
+            let opciones_votadas = mirar_opciones_votadas(votaciones)
+            //opciones
+            window.sessionStorage.setItem("votaciones", JSON.stringify(votaciones))
+            generar_encuestas(data, encuesta_id, contador_votaciones, opciones_votadas)
+        })
+    })
+})
+

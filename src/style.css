@@ -1,0 +1,453 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+:root {
+  /*por decto del VITE*/
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #94e10f;
+  text-decoration: inherit;
+  transition: 0.15s;
+}
+
+a:hover {
+  color: #8ed80eee;
+  transition: 0.15s;
+}
+
+body {
+  overflow: auto;
+}
+
+/*elementos del doom propios*/
+.usuario {
+  position: relative;
+  left: 0px;
+  top: 0px;
+
+}
+
+.usuario #bt-usuario {
+  width: 150px;
+  padding: 2px;
+  height: 21px;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 14px;
+  border: #76b900 1px solid;
+  transition: 0.2s;
+  user-select: none;
+  background-color: #121313a8;
+}
+
+.usuario #bt-usuario span {
+  color: #eeeeeeee;
+  font-weight: 600;
+  letter-spacing: 0px;
+}
+
+.usuario #bt-usuario:hover {
+  transition: 0.25s;
+  font-size: 14.4px;
+  padding: 2px;
+  letter-spacing: 0.1px;
+  background-color: #2b2e6617;
+}
+
+.usuario #menu-usuario {
+  background-color: #75b900;
+  color: #080808;
+  font-weight: 500;
+  width: 250px;
+  padding: 8px;
+  border-radius: 3px;
+  box-shadow: 0px 0px 2px rgb(17, 20, 59);
+  display: none;
+  z-index: 5;
+}
+
+.usuario #menu-usuario> :nth-child(2) {
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.abierto {
+  display: block !important;
+}
+
+.cerrado {
+  display: none !important;
+}
+
+#menu-usuario #input-nombre-usuario {
+  margin-left: 3px;
+  height: 23px;
+  outline: none;
+  padding-left: 6px;
+  padding-right: 6px;
+  border-color: #161616b8;
+  border-radius: 3px;
+  background-color: whitesmoke;
+  color: black;
+}
+
+#menu-usuario #input-bono-usuario {
+  height: 25px;
+  width: 25px;
+  margin-left: 5px;
+  cursor: pointer;
+}
+
+#menu-usuario input[name="bono"] {
+  margin-top: 8px;
+}
+
+main {
+  margin-top: 34px;
+  position: relative;
+  left: 10%;
+  width: 80%;
+}
+
+footer {
+  display: flex;
+  justify-content: right;
+  padding-left: 12px;
+  padding-right: 12px;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  margin-bottom: 8px;
+  margin-right: 12px;
+}
+
+#alineador-pagina-datos-analizados-encuesta {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  background-color: rgba(16, 41, 41, 0.784);
+  align-items: center;
+  justify-content: center;
+}
+
+.flex {
+  display: flex;
+}
+
+.display-none {
+  display: none;
+}
+
+#pagina-datos-analizados-encuesta .head-pagina-datos {
+  display: flex;
+  justify-content: space-between;
+}
+
+#pagina-datos-analizados-encuesta .head-pagina-datos #bt-salir-pagina-datos {
+  margin-right: 10px;
+  cursor: pointer;
+  user-select: none;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  text-shadow: 0px 0px 5px rgba(32, 32, 32, 0.82);
+  font-weight: 600;
+}
+
+#pagina-datos-analizados-encuesta .head-pagina-datos #bt-salir-pagina-datos:hover {
+  text-decoration: underline;
+}
+
+#pagina-datos-analizados-encuesta .head-pagina-datos div {
+  width: 80%;
+  margin-left: 8px
+}
+
+#pagina-datos-analizados-encuesta .head-pagina-datos div #bt-copiar-datos-pagina {
+  margin-left: 18px;
+  cursor: pointer;
+  user-select: none;
+  letter-spacing: 0.45px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  text-shadow: 0px 0px 5px rgba(32, 32, 32, 0.82);
+  position: relative;
+  top: 5px;
+}
+
+#pagina-datos-analizados-encuesta {
+  position: relative;
+  height: 70%;
+  width: 80%;
+  max-width: 800px;
+  border-radius: 5px;
+  padding: 15px;
+  box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.871);
+  background-color: #111119;
+  cursor: default;
+  overflow: auto;
+}
+
+#pagina-datos-analizados-encuesta h3 {
+  font-size: 18.5px;
+  text-decoration: underline;
+  margin: 0;
+  margin-top: 5px;
+  max-width: 85%;
+}
+
+#pagina-datos-analizados-encuesta table {
+  margin-top: 32px;
+  padding: 5px;
+  border-radius: 3px;
+  width: calc(100% - 16px);
+  margin-left: 8px;
+  border-collapse: collapse;
+}
+
+#pagina-datos-analizados-encuesta table caption {
+  margin-bottom: 3px;
+}
+
+#pagina-datos-analizados-encuesta table th {
+  border: 1px solid white;
+  border-collapse: collapse;
+  padding: 8px;
+  overflow: auto;
+}
+
+#pagina-datos-analizados-encuesta table td {
+  border: 1px solid white;
+  border-collapse: collapse;
+  padding: 8px;
+  overflow: auto;
+}
+
+#select-encuestas {
+  width: 100%;
+  text-align: center;
+  border: none;
+  background-color: transparent;
+  outline: none;
+  cursor: pointer;
+  height: 40px;
+  border-radius: 6px;
+  background-color: #76b900;
+  color: #080808;
+  font-family: "Roboto", sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+  box-shadow: #13131c 0px 0px 3px;
+  margin: 0;
+}
+
+.div-juntar-todo-cuerpo-opciones {
+  margin-top: 28px;
+
+}
+
+.tipo-voto {
+  font-size: 14px;
+  opacity: 0.7;
+  cursor: default;
+}
+
+#cuerpo-opciones {
+  margin: 0;
+  background-color: #08080846;
+  border-radius: 5px;
+}
+
+.opcion-votacion {
+  margin: 0;
+  border-bottom: solid 1px rgba(255, 255, 255, 0.186);
+  display: flex;
+  height: 65px;
+  justify-content: space-between;
+  cursor: default;
+  content-visibility: auto;
+}
+
+
+.opcion-votacion div {
+  margin-left: 14px;
+  margin-top: 8px;
+}
+
+.opcion-votacion h3 {
+  margin: 0;
+}
+
+.opcion-votacion .sub-2 {
+  margin-right: 45px;
+  width: 35px;
+  height: 35px;
+  border-radius: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0px 0px 2.4px #42b80b8d;
+  background-color: #08080866;
+  position: relative;
+  top: 5px;
+}
+
+.opcion-votacion .sub-2 img {
+  width: 24px;
+  height: 24px;
+  user-select: none;
+}
+
+.bt-analizar-datos {
+  width: 100%;
+  text-align: center;
+  border: none;
+  background-color: transparent;
+  outline: none;
+  cursor: pointer;
+  height: 35px;
+  border-radius: 6px;
+  background-color: #121313;
+  color: whitesmoke;
+  font-family: "Roboto", sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+  box-shadow: #13131c 0px 0px 3px;
+  margin: 0;
+  margin-top: 16px;
+}
+
+.text-contador-votos {
+  cursor: pointer;
+  transition: 0.1s;
+}
+
+.text-contador-votos:hover {
+  text-shadow: 0px 0px 2px rgba(135, 135, 135, 0.537);
+  transition: 0.1s;
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes desaparecer {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+#mini-analisis-opcion {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  max-width: 400px;
+  width: auto;
+  border-radius: 5px;
+  padding: 12px;
+  box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.871);
+  background-color: #111119;
+  overflow: auto;
+}
+
+.aparecer {
+  opacity: 0;
+  animation: aparecer 0.5s ease 0.5s forwards;
+}
+
+.desaparecer {
+  opacity: 1;
+  animation: desaparecer 0.5s ease 0.5s forwards;
+}
+
+#mini-analisis-opcion table {
+  padding: 3px;
+  border-radius: 3px;
+  width: auto;
+  height: auto;
+  max-height: 250px;
+  margin-left: 0px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+#mini-analisis-opcion table td {
+  border: 1px solid white;
+  border-collapse: collapse;
+  padding: 7px;
+  overflow: auto;
+  line-height: 16px;
+}
+
+.semi-aparecer {
+  display: block;
+  opacity: 0.2;
+  transition: opacity 0.26s ease;
+}
+
+.semi-desaparecer {
+  opacity: 0;
+  transition: opacity 0.26s ease;
+}
+
+.checked {
+  display: block;
+  animation: check 0.25s forwards;
+}
+
+@keyframes check {
+  from {
+    opacity: 0.2;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.img-checked {
+  image-rendering: pixelated;
+  content-visibility: auto;
+  shape-rendering: crispEdges;
+  -webkit-tap-highlight-color: transparent !important;
+  outline: none !important;
+  user-select: none;
+
+}
+
+.img-checked:focus {
+  -webkit-tap-highlight-color: transparent !important;
+  outline: none !important;
+  pointer-events: auto; /* Mantener click útil */
+
+}
