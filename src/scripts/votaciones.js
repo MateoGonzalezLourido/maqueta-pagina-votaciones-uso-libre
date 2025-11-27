@@ -10,8 +10,31 @@ const NOMBRE_TABLA_ENCUESTAS = "encuestas"
 const NOMBRE_TABLA_VOTACIONES = "encuestas_votaciones"
 const NOMBRE_TABLA_DEFECTO_USAR = NOMBRE_TABLA_ENCUESTAS
 
-
 const conseguir_datos_SUPABASE = async ({ encuesta_id = null, tabla = NOMBRE_TABLA_DEFECTO_USAR }) => {
+    let query = supabase.from(tabla).select("*");
+    if (encuesta_id) query = query.eq("id_encuesta", encuesta_id);
+
+    const { data, error } = await query;
+    if (error) {
+        console.log(
+            tabla === NOMBRE_TABLA_ENCUESTAS
+                ? "Error al recibir datos encuestas:"
+                : "Error al recibir votaciones encuestas:",
+            error
+        )
+        return []
+    }
+
+    if (tabla === NOMBRE_TABLA_ENCUESTAS) {
+        if (!data || data.length === 0) {
+            console.log("No hay encuestas!")
+        } else if (!data[0].opciones || data[0].opciones.length === 0) {
+            console.log("No hay opciones!")
+        }
+    }
+    return data
+}
+/*const conseguir_datos_SUPABASE = async ({ encuesta_id = null, tabla = NOMBRE_TABLA_DEFECTO_USAR }) => {
     if (encuesta_id) {
         const { data, error } = await supabase
             .from(tabla)
@@ -59,7 +82,7 @@ const conseguir_datos_SUPABASE = async ({ encuesta_id = null, tabla = NOMBRE_TAB
 
         return data
     }
-}
+}*/
 
 const borrar_votacion_encuesta = async (id_nombre, id_encuesta, opcion_votada_encuesta) => {
     const { error } = await supabase
