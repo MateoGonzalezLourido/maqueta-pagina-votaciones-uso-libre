@@ -1,69 +1,66 @@
+/*Importar cosas necesarias para el codigo */
 import { supabase } from '../supabase/supabase'
 import { getBrowserFingerprint } from './datos_usuario_control.js'
 
 /*TODAS LAS VARIABLES O FUNCIONES PARA HACERLAS MAS ACCESIBLES */
+const NAME_DT_LOC_BONO_VARIABLE = "bono_variable"
+const NAME_DT_LOC_NOMBRE_VARIABLE = "nombre_variable"
+//supabase datos
+const NOMBRE_TABLA_ENCUESTAS = "encuestas"
+const NOMBRE_TABLA_VOTACIONES = "encuestas_votaciones"
+const NOMBRE_TABLA_DEFECTO_USAR = NOMBRE_TABLA_ENCUESTAS
 
 
-
-const conseguir_datos_encuesta = async (encuesta_id) => {
+const conseguir_datos_SUPABASE = async ({ encuesta_id = null, tabla = NOMBRE_TABLA_DEFECTO_USAR }) => {
     if (encuesta_id) {
         const { data, error } = await supabase
-            .from('encuestas')
+            .from(tabla)
             .select("*")
-            .eq("id_encuesta", encuesta_id)
+            .eq("id_encuesta", encuesta_id);
 
-        if (error) {
+        if (error && tabla == NOMBRE_TABLA_ENCUESTAS) {
             console.log("Error al recibir datos encuestas:", error)
             return []
         }
-        if (data.length == 0) {
+        else if (error && tabla == NOMBRE_TABLA_VOTACIONES) {
+            console.log("Error al recibir votaciones encuestas:", error)
+            return []
+        }
+
+        if (data != undefined && data.length == 0 && tabla == NOMBRE_TABLA_ENCUESTAS) {
             console.log("No hay encuestas!")
         }
-        else {
-            if (data[0].opciones.length == 0) {
-                console.log("No hay opciones!")
-            }
+        else if (data != undefined && data[0].opciones != undefined && data[0].opciones.length == 0 && tabla == NOMBRE_TABLA_ENCUESTAS) {
+            console.log("No hay opciones!")
         }
+
         return data
     }
     else {
         const { data, error } = await supabase
-            .from('encuestas')
+            .from(tabla)
             .select("*");
-        if (error) {
+
+        if (error && tabla == NOMBRE_TABLA_ENCUESTAS) {
             console.log("Error al recibir datos encuestas:", error)
             return []
         }
-        if (data.length == 0) {
+        else if (error && tabla == NOMBRE_TABLA_VOTACIONES) {
+            console.log("Error al recibir votaciones encuestas:", error)
+            return []
+        }
+
+        if (data != undefined && data.length == 0 && tabla == NOMBRE_TABLA_ENCUESTAS) {
             console.log("No hay encuestas!")
         }
-        return data
-    }
-}
-const conseguir_datos_votaciones_encuesta = async (encuesta_id) => {
-    if (encuesta_id) {
-        const { data, error } = await supabase
-            .from('encuestas_votaciones')
-            .select("*")
-            .eq("id_encuesta", encuesta_id)
+        else if (data != undefined && data[0].opciones && data[0].opciones.length == 0 && tabla == NOMBRE_TABLA_ENCUESTAS) {
+            console.log("No hay opciones!")
+        }
 
-        if (error) {
-            console.log("Error al recibir datos votaciones:", error)
-            return []
-        }
-        return data
-    }
-    else {
-        const { data, error } = await supabase
-            .from('encuestas_votaciones')
-            .select("*");
-        if (error) {
-            console.log("Error al recibir datos votaciones:", error)
-            return []
-        }
         return data
     }
 }
+
 const borrar_votacion_encuesta = async (id_nombre, id_encuesta, opcion_votada_encuesta) => {
     const { error } = await supabase
         .from('encuestas_votaciones')
@@ -192,7 +189,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
         const titulo_escogido = e.target.value
         const encuesta_escogida = data.find(x => x.titulo == titulo_escogido)
         //registro de votos: hacer un recuento de los datos separados por opcion
-        conseguir_datos_votaciones_encuesta(encuesta_escogida.id_encuesta).then((votaciones) => {
+        conseguir_datos_SUPABASE({ "encuesta_id": encuesta_escogida.id_encuesta, "tabla": NOMBRE_TABLA_VOTACIONES }).then((votaciones) => {
             let contador_votaciones = contador_votos(votaciones, encuesta_escogida.id_encuesta)
             let opciones_votadas = mirar_opciones_votadas(votaciones, encuesta_escogida.id_encuesta)
             //crear datos guardado de las votaciones de la encuesta para reducir solicitudes a la base de datos
@@ -238,7 +235,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                 }
                 const id_nombre = getBrowserFingerprint()
                 //ver si ya existe ese voto
-                conseguir_datos_votaciones_encuesta(encuesta_id).then(votaciones => {
+                conseguir_datos_SUPABASE({ "encuesta_id": encuesta_id, "tabla": NOMBRE_TABLA_VOTACIONES }).then(votaciones => {
                     let existe = votaciones.find(x => x.id_nombre == id_nombre && x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1])
                     let unico_voto_realizado;
                     if (voto_unico) {
@@ -264,9 +261,9 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                             })
                         }
                         else {//crear voto
-                            let nombre_votante = window.localStorage.getItem("nombre_variable") ? window.localStorage.getItem("nombre_variable") : "anónimo"
+                            let nombre_votante = window.localStorage.getItem(NAME_DT_LOC_NOMBRE_VARIABLE) ? window.localStorage.getItem(NAME_DT_LOC_NOMBRE_VARIABLE) : "anónimo"
                             nombre_votante = nombre_votante.replace(/\n+/g, "").replace(/\s+/g, " ").replace(/[0-9|.<>,#;]/g, "").replaceAll("no bono", "").replaceAll("(bono)", "").replaceAll("bono", "")
-                            let bono_votante = window.localStorage.getItem("bono_variable")
+                            let bono_votante = window.localStorage.getItem(NAME_DT_LOC_BONO_VARIABLE)
                             if (bono_votante != "true") bono_votante = false
                             const datos_enviar_voto = {
                                 "id_nombre": id_nombre, "id_encuesta": id_seleccionado[0], "opcion_votada_encuesta": id_seleccionado[1], "nombre_votante": nombre_votante, "bono_votante": Boolean(bono_votante)
@@ -311,7 +308,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                     }
                 })
             }
-            conseguir_datos_encuesta(id_seleccionado[0]).then(encuesta => {
+            conseguir_datos_SUPABASE({ "encuesta_id": id_seleccionado[0], "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuesta => {
                 votar(encuesta[0].voto_unico)
             })
         })
@@ -321,8 +318,8 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
     const $bt_analizar_datos = document.querySelector(`#bt-analizar-datos-encuesta-${encuesta_id}`)
     $bt_analizar_datos.addEventListener("click", () => {
         $bt_analizar_datos.style.cursor = "progress"//puntero cargando
-        conseguir_datos_encuesta(encuesta_id).then(encuesta => {
-            conseguir_datos_votaciones_encuesta(encuesta_id).then(votaciones => {
+        conseguir_datos_SUPABASE({ "encuesta_id": encuesta_id, "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuesta => {
+            conseguir_datos_SUPABASE({ "encuesta_id": encuesta_id, "tabla": NOMBRE_TABLA_VOTACIONES }).then(votaciones => {
                 $bt_analizar_datos.style.cursor = "pointer"//quitar puntero cargando
                 const contador_votaciones = contador_votos(votaciones)
                 const mostrar_recuento_votos = () => {
@@ -514,7 +511,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
 }
 
 globalThis.addEventListener("DOMContentLoaded", () => {
-    conseguir_datos_encuesta().then(data => {
+    conseguir_datos_SUPABASE({}).then(data => {
         //escoger una encuesta como principal(si hay solo una principal esa es, sino se coge la primera que llegue)
         //esto se hace solo al inicio, luego solo se pone la que se seleccione
         let encuesta_id = data.find(x => x.principal == true)
@@ -524,7 +521,7 @@ globalThis.addEventListener("DOMContentLoaded", () => {
         else {
             encuesta_id = encuesta_id.id_encuesta
         }
-        conseguir_datos_votaciones_encuesta(encuesta_id).then((votaciones) => {
+        conseguir_datos_SUPABASE({ "encuesta_id": encuesta_id, "tabla": NOMBRE_TABLA_VOTACIONES }).then((votaciones) => {
             //registro de votos: hacer un recuento de los datos separados por opcion
             let contador_votaciones = contador_votos(votaciones)
             //crear/mostrar opciones de la encuesta para votar y sus votos
