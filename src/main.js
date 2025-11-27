@@ -2,6 +2,7 @@ import './style.css'
 import './scripts/datos_usuario_control.js'
 import './scripts/votaciones.js'
 
+/*CODIGO */
 const URL_REPOSITORIO_ORIGINAL = "https://github.com/MateoGonzalezLourido/maqueta-pagina-votaciones-uso-libre"
 
 document.querySelector('#app').innerHTML = `
