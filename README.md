@@ -39,8 +39,10 @@ VITE_SUPABASE_KEY=tu_key
 
 o npm run dev --host (para crear un enlace por ip privada para que accedan otros de tu red)
 
+
 #*Estructura:
 /public/ > imagenes
+
 /src/ > main(donde debes importar todo el cosigo que quieres que se ejecute en la pagina)
 
 /src/scripts/ > las funciones de la pagina(en ella hay un .js que controla los datos del usuario[nombre, bono , generador id].
