@@ -4,11 +4,11 @@ una pagina para votaciones, que cualquiera puede copiar para uso propio
 #Caracteristicas
 
 
-crea votaciones
+-crea votaciones
 
-diseño responsive
+-diseño responsive
 
-cosigo fácil de adaptar
+-cosigo fácil de adaptar
 
 
 ##como funciona
@@ -16,21 +16,26 @@ cosigo fácil de adaptar
 
 #*Tecnologías usadas:
 
-Vite
+-Vite
 
-js/html/css
+-js/html/css
 
-supabase
+-supabase
+
 
 #*Como usarlo:
-clona el proyecto
-instala dependencias > npm install
-crea un archivo .env con las variables
+
+-clona el proyecto
+
+-instala dependencias > npm install
+
+-crea un archivo .env con las variables
 [
 VITE_SUPABASE_URL=tu_url
 VITE_SUPABASE_KEY=tu_key
 ]
-ejecutarlo localhost: npm run dev (en la raiz del proyecto)
+
+-ejecutarlo localhost: npm run dev (en la raiz del proyecto)
 
 o npm run dev --host (para crear un enlace por ip privada para que accedan otros de tu red)
 
