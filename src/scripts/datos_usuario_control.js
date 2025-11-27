@@ -103,16 +103,15 @@ export function getBrowserFingerprint() {
 
     // Datos que incluyen lo que pediste
     const data = [
-        navigator.userAgent,                       // info del navegador
         navigator.language,                        // idioma
         navigator.languages.join(','),             // idiomas adicionales
         navigator.platform,                        // plataforma (Windows, Linux, Android…)
         navigator.vendor,                          // fabricante del navegador
         navigator.hardwareConcurrency,             // núcleos de CPU
+        navigator.maxTouchPoints,                  // hardware
         screen.colorDepth,                         // profundidad de color
         Intl.DateTimeFormat().resolvedOptions().timeZone, // zona horaria
-        window.devicePixelRatio,                   // densidad de píxeles
-        webglInfo                                  // info GPU/driver
+        window.devicePixelRatio,                   // densidad de píxeles   
     ].join('||');
 
     // Hash simple para crear un ID único
