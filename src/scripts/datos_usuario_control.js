@@ -1,16 +1,28 @@
+/*VARIABLES GLOBALES PARA MEJORAR LA ACCESIBILIDAD DE LOS CAMBIOS */
 let $bt_usuario, $menu_usuario, $nombre_usuario, $bono_usuario
+const $ID_BT_USUARIO = "bt-usuario"
+const $ID_MENU_USUARIO = "menu-usuario"
+const $ID_INPUT_NOMBRE_USUARIO = "input-nombre-usuario"
+const $ID_INPUT_BONO_USUARIO = "input-bono-usuario"
+const NAME_DT_LOC_BONO_VARIABLE = "bono_variable"
+const NAME_DT_LOC_NOMBRE_VARIABLE = "nombre_variable"
+const VALOR_DEFECTO_NOMBRE_USUARIO="anónimo"
+const VALOR_DEFECTO_BONO_USUARIO=false
+const CLASS_CERRAR_MENU="cerrado"
+const CLASS_ABRIR_MENU="abierto"
+
 
 document.addEventListener("DOMContentLoaded", () => {
-    $bt_usuario = document.querySelector("#bt-usuario")
-    $menu_usuario = document.querySelector("#menu-usuario")
+    $bt_usuario = document.querySelector(`#${$ID_BT_USUARIO}`)
+    $menu_usuario = document.querySelector(`#${$ID_MENU_USUARIO}`)
 
     $bt_usuario.addEventListener("click", (e) => {
         e.stopPropagation()
         flip_flop_menu()
     })
     //evento para actualizar datos
-    $nombre_usuario = document.querySelector("#input-nombre-usuario")
-    $bono_usuario = document.querySelector("#input-bono-usuario")
+    $nombre_usuario = document.querySelector(`#${$ID_INPUT_NOMBRE_USUARIO}`)
+    $bono_usuario = document.querySelector(`#${$ID_INPUT_BONO_USUARIO}`)
 
     $nombre_usuario.addEventListener("change", () => { actualizar_nombre() })
 
@@ -20,20 +32,20 @@ document.addEventListener("DOMContentLoaded", () => {
 function flip_flop_menu() {
     if (!$menu_usuario.classList.contains("abierto")) {
         //coger datos
-        const nombre_usuario = window.localStorage.getItem("nombre_variable")
-        let bono_usuario = window.localStorage.getItem("bono_variable")
+        const nombre_usuario = window.localStorage.getItem(NAME_DT_LOC_NOMBRE_VARIABLE)
+        let bono_usuario = window.localStorage.getItem(NAME_DT_LOC_BONO_VARIABLE)
 
         $nombre_usuario.value = nombre_usuario
         if (bono_usuario == "true") $bono_usuario.checked = bono_usuario
 
-        $bt_usuario.classList.add("cerrado")
-        $menu_usuario.classList.add("abierto")
+        $bt_usuario.classList.add(CLASS_CERRAR_MENU)
+        $menu_usuario.classList.add(CLASS_ABRIR_MENU)
 
         //quitar al pulsar fuera del menu
         function cerrar_menu(e) {
             if (!$menu_usuario.contains(e.target)) {
-                $menu_usuario.classList.remove("abierto")
-                $bt_usuario.classList.remove("cerrado")
+                $menu_usuario.classList.remove(CLASS_ABRIR_MENU)
+                $bt_usuario.classList.remove(CLASS_CERRAR_MENU)
                 globalThis.removeEventListener("click", cerrar_menu);
             }
         }
@@ -42,40 +54,35 @@ function flip_flop_menu() {
         }, 0);
     }
     else {
-        $menu_usuario.classList.remove("abierto")
-        $bt_usuario.classList.remove("cerrado")
+        $menu_usuario.classList.remove(CLASS_ABRIR_MENU)
+        $bt_usuario.classList.remove(CLASS_CERRAR_MENU)
     }
 }
 
 function actualizar_nombre() {
-    const nombre_variable = "nombre_usuario"
-    const valor_defecto = "anónimo"
-    const valor_repuesto = !window.localStorage.getItem(nombre_variable) ? valor_defecto : window.localStorage.getItem(nombre_variable)
+    const valor_repuesto = !window.localStorage.getItem(NAME_DT_LOC_NOMBRE_VARIABLE) ? VALOR_DEFECTO_NOMBRE_USUARIO : window.localStorage.getItem(NAME_DT_LOC_NOMBRE_VARIABLE)
     let valor = $nombre_usuario.value.replace(/\n+/g, "").replace(/\s+/g, " ").replace(/[0-9|.<>,#;]/g, "").replaceAll("no bono", "").replaceAll("(bono)", "").replaceAll("bono", "")
     if (valor.length < 1) {
         valor = valor_repuesto
     }
     //parchear
     try {//intentar actualizar
-        window.localStorage.setItem("nombre_variable", valor.slice(0, 40).toString())
+        window.localStorage.setItem(NAME_DT_LOC_NOMBRE_VARIABLE, valor.slice(0, 40).toString())
     }
     catch {//establecer el anterior
-        window.localStorage.setItem("nombre_variable", valor_repuesto)
+        window.localStorage.setItem(NAME_DT_LOC_NOMBRE_VARIABLE, valor_repuesto)
     }
 }
 
 function actualizar_bono() {
-    const bono_variable = "bono_usuario"
-    const valor_defecto = false
-
-    const valor_repuesto = !window.localStorage.getItem(bono_variable) ? valor_defecto : window.localStorage.getItem(bono_variable)
+    const valor_repuesto = !window.localStorage.getItem(NAME_DT_LOC_BONO_VARIABLE) ? VALOR_DEFECTO_BONO_USUARIO : window.localStorage.getItem(NAME_DT_LOC_BONO_VARIABLE)
     const valor = $bono_usuario.checked ? $bono_usuario.checked : valor_repuesto
     //parchear
     try {//intentar actualizar
-        window.localStorage.setItem("bono_variable", valor.toString())
+        window.localStorage.setItem(NAME_DT_LOC_BONO_VARIABLE, valor.toString())
     }
     catch {//establecer el anterior
-        window.localStorage.setItem("bono_variable", valor_repuesto)
+        window.localStorage.setItem(NAME_DT_LOC_BONO_VARIABLE, valor_repuesto)
     }
 }
 
@@ -83,7 +90,7 @@ function actualizar_bono() {
 export function getBrowserFingerprint() {
     // Canvas + WebGL (muy útil para fingerprint)
     const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
 
     let webglInfo = '';
     if (gl) {

@@ -24,7 +24,7 @@ document.querySelector('#app').innerHTML = `
   <div class="display-none" id="alineador-pagina-datos-analizados-encuesta">
   <div id="pagina-datos-analizados-encuesta"></div>
   </div>
-  <footer><a href="${URL_REPOSITORIO_ORIGINAL}">Github repositorio</a></footer>
+  <div class="footer"><a href="${URL_REPOSITORIO_ORIGINAL}">Github repositorio</a></div>
 `
 //crear el id_unique_nombre del dispositivo (se regenera siempre para evitar manipulaciones de este)
 window.sessionStorage.setItem("id_unique_nombre", getBrowserFingerprint().toString())

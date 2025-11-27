@@ -31,19 +31,23 @@ a:hover {
 body {
   overflow: auto;
 }
-#app{
-  max-width: 800px;   /* ancho máximo */
-  margin: 0 auto;     /* centra horizontalmente */
-  width: 100%;        /* ocupa todo el ancho disponible hasta 700px */
-  box-sizing: border-box; /* opcional, para incluir padding en el ancho */
 
+#app {
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+  min-height: 100vh;
+  /* 🔥 OBLIGA a ocupar toda la pantalla */
+  display: flex;
+  /* CONVERTIR EN FLEX */
+  flex-direction: column;
 }
+
 /*elementos del doom propios*/
 .usuario {
   position: relative;
   left: 0px;
   top: 0px;
-
 }
 
 .usuario #bt-usuario {
@@ -131,16 +135,14 @@ main {
 
 }
 
-footer {
+.footer {
   display: flex;
   justify-content: right;
-  padding-left: 12px;
-  padding-right: 12px;
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  margin-bottom: 8px;
+  padding-right: 0px;
+  margin-bottom: 20px;
   margin-right: 12px;
+  margin-top: auto;
+  /* ahora sí BAJA al fondo */
 }
 
 #alineador-pagina-datos-analizados-encuesta {
@@ -455,15 +457,17 @@ footer {
 .img-checked:focus {
   -webkit-tap-highlight-color: transparent !important;
   outline: none !important;
-  pointer-events: auto; /* Mantener click útil */
+  pointer-events: auto;
+  /* Mantener click útil */
 
 }
 
-.opcion-votado{
+.opcion-votado {
   background-color: #13342936;
   transition: 0.3s;
 }
-.opcion-no-votado{
+
+.opcion-no-votado {
   background-color: transparent;
   transition: 0.3s;
 }
