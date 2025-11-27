@@ -129,7 +129,7 @@ const generar_opciones_encuestas = (encuestas, encuesta_id, contador_votaciones,
                                 <span class="text-contador-votos" id="numero-votantes-bt-lista-${encuesta.id_encuesta}-${i}">*Votos: ${contador}</span>
                             </div>
                             <div class="sub-2" id="checkbox-opcion-encuesta-${encuesta.id_encuesta}-${i}">
-                            <img  id="img-check-votado-${encuesta.id_encuesta}-${i}" class="img-checked ${clase}"src="/public/checked.svg" alt=""draggable="false" loading="lazy">
+                            <img  id="img-check-votado-${encuesta.id_encuesta}-${i}" class="img-checked ${clase}"src="/checked.svg" alt=""draggable="false" loading="lazy">
                             </div>
                 </div>`
             }
