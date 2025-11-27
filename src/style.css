@@ -387,7 +387,7 @@ main {
 }
 
 #mini-analisis-opcion {
-  position: absolute;
+  position: fixed;
   top: 3px;
   right: 3px;
   max-width: 400px;
