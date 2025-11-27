@@ -44,7 +44,7 @@ o npm run dev --host (para crear un enlace por ip privada para que accedan otros
 
 
 
-#*Estructura:
+#*Estructura proyecto:
 
 ~/public/ > imagenes
 
@@ -57,3 +57,31 @@ Si quieres usar funciones de un .js en otro debes importar o la funcion o el .js
 
 Gran parte de nombres de elementos, variables del localstorage y algun otro dato; estan arriva de la pagina .js para hacer todo un poco mas accesible
 
+#*Estructura de SUPABASE:
+
+tablas: encuestas , encuestas_votaciones
+
+tabla[encuestas]:
+
+{
+id_encuesta:int8(identity-primary key-unique),
+titulo:text,
+opciones: text[],
+principal:bool,
+furacion_fechas:timestamptz[],
+republicar:bool,
+voto_unico:bool,
+terminada:bool,
+mostrar_resultados_cerrada:bool
+}
+
+tabla[encuestas_votaciones]:
+
+{
+id:int8(identity-primary key-unique),
+id_nombre:text,
+id_encuesta:int8,
+opcion_votada_encuesta:int8,
+nombre_votante:text,
+bono_votante:bool
+}
