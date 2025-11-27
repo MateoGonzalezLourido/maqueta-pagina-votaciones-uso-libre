@@ -31,7 +31,13 @@ a:hover {
 body {
   overflow: auto;
 }
+#app{
+  max-width: 800px;   /* ancho máximo */
+  margin: 0 auto;     /* centra horizontalmente */
+  width: 100%;        /* ocupa todo el ancho disponible hasta 700px */
+  box-sizing: border-box; /* opcional, para incluir padding en el ancho */
 
+}
 /*elementos del doom propios*/
 .usuario {
   position: relative;
@@ -122,6 +128,7 @@ main {
   position: relative;
   left: 10%;
   width: 80%;
+
 }
 
 footer {
