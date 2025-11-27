@@ -41,6 +41,7 @@ o npm run dev --host (para crear un enlace por ip privada para que accedan otros
 
 
 #*Estructura:
+
 ~/public/ > imagenes
 
 ~/src/ > main(donde debes importar todo el cosigo que quieres que se ejecute en la pagina)
