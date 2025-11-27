@@ -26,8 +26,6 @@ document.querySelector('#app').innerHTML = `
   </div>
   <div class="footer"><a href="${URL_REPOSITORIO_ORIGINAL}">Github repositorio</a></div>
 `
-//crear el id_unique_nombre del dispositivo (se regenera siempre para evitar manipulaciones de este)
-window.sessionStorage.setItem("id_unique_nombre", getBrowserFingerprint().toString())
 
 //!!!! importante quitar esto si quieres desarrollar la pagina-> bloquea el inspection y otros contextmenu (este bloqueo se metio porque en el telefono al pulsar en la imagen para votar saltaba un contextmenu y afecta a la comodidad del uso de la pagina en el telefono)
 document.addEventListener("contextmenu", (e) => {

@@ -5,6 +5,16 @@ import { getBrowserFingerprint } from './datos_usuario_control.js'
 /*ALGUNAS VARIABLES O FUNCIONES PARA HACERLAS MAS ACCESIBLES */
 const NAME_DT_LOC_BONO_VARIABLE = "bono_variable"
 const NAME_DT_LOC_NOMBRE_VARIABLE = "nombre_variable"
+const CLASS_CHECKED_CHECKBOX_VOTO = "checked"
+const CLASS_SEMIDESAPARECER_CHECKBOX_VOTO = "semi-desaparecer"
+const CLASS_SEMIAPARECER_CHECKBOX_VOTO = "semi-aparecer"
+const CLASS_OPCION_VOTADA = "opcion-votado"
+const PARTE_ID_REMPLAZAR_CHECKBOX_VOTO = "checkbox-opcion-encuesta-"
+const PARTE_ID_USAR_OPCION_VOTACION = "opcion-encuesta-"
+const PARTE_ID_REMPLAZAR_IMG_CHECK = "img-check-votado-"
+const PARTE_ID_CONTADOR_VOTANTES= "numero-votantes-bt-lista-"
+const TEXTO_CONTADOR_VOTOS = "*Votos: "
+const URL_CHECKED_IMG = "/checked.svg"
 //supabase datos
 const NOMBRE_TABLA_ENCUESTAS = "encuestas"
 const NOMBRE_TABLA_VOTACIONES = "encuestas_votaciones"
@@ -96,16 +106,17 @@ const generar_opciones_encuestas = (encuestas, encuesta_id, contador_votaciones,
                 if (indice != -1 && contador_votaciones != undefined) {
                     contador = contador_votaciones[indice].votantes.length
                 }
-                //terminar de arreglar por que no aparecen marcados desde el inicio
+                //esto es para bloquear o no las animaciones de los check al iniciar la pagina 
                 const display = checked ? "block" : "none"
-                const clase = display == "block" ? "checked" : "semi-desaparecer"
-                html_opciones += `<div class="opcion-votacion"id="opcion-encuesta-${i}">
+                const clase = display == "block" ? CLASS_CHECKED_CHECKBOX_VOTO : CLASS_SEMIDESAPARECER_CHECKBOX_VOTO
+                const clase_opcion = display == "block" ? CLASS_OPCION_VOTADA : ""
+                html_opciones += `<div class="opcion-votacion ${clase_opcion}"id="${PARTE_ID_USAR_OPCION_VOTACION}${i}">
                             <div>
                                 <h3>${encuesta.opciones[i]}</h3>
-                                <span class="text-contador-votos" id="numero-votantes-bt-lista-${encuesta.id_encuesta}-${i}">*Votos: ${contador}</span>
+                                <span class="text-contador-votos" id="${PARTE_ID_CONTADOR_VOTANTES}${encuesta.id_encuesta}-${i}">*Votos: ${contador}</span>
                             </div>
-                            <div class="sub-2" id="checkbox-opcion-encuesta-${encuesta.id_encuesta}-${i}">
-                            <img  id="img-check-votado-${encuesta.id_encuesta}-${i}" class="img-checked ${clase}"src="/checked.svg" alt=""draggable="false" loading="lazy">
+                            <div class="sub-2 " id="${PARTE_ID_REMPLAZAR_CHECKBOX_VOTO + encuesta.id_encuesta}-${i}">
+                            <img  id="${PARTE_ID_REMPLAZAR_IMG_CHECK}${encuesta.id_encuesta}-${i}" class="img-checked ${clase}"src="${URL_CHECKED_IMG}" alt=""draggable="false" loading="lazy">
                             </div>
                 </div>`
             }
@@ -134,7 +145,6 @@ function mirar_opciones_votadas(votaciones) {
     let opciones_votadas = []
     //mirar que opciones votaste(usando usuario)
     const id = getBrowserFingerprint()
-    window.sessionStorage.setItem("id_unique_nombre", id.toString())
     votaciones.forEach(vt => {
         if (vt.id_nombre == id) {
             opciones_votadas.push(vt.opcion_votada_encuesta)
@@ -178,16 +188,16 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
         //animacion de los checkbox
         const id_img = boton.firstElementChild.id
         boton.addEventListener("mouseenter", () => {
-            if (!document.querySelector(`#${id_img}`).classList.contains("checked")) {
+            if (!document.querySelector(`#${id_img}`).classList.contains(CLASS_CHECKED_CHECKBOX_VOTO)) {
                 document.querySelector(`#${id_img}`).style.display = "block"
-                document.querySelector(`#${id_img}`).classList.remove("semi-desaparecer")
-                document.querySelector(`#${id_img}`).classList.add("semi-aparecer")
+                document.querySelector(`#${id_img}`).classList.remove(CLASS_SEMIDESAPARECER_CHECKBOX_VOTO)
+                document.querySelector(`#${id_img}`).classList.add(CLASS_SEMIAPARECER_CHECKBOX_VOTO)
             }
         })
         boton.addEventListener("mouseleave", () => {
-            if (!document.querySelector(`#${id_img}`).classList.contains("checked")) {
-                document.querySelector(`#${id_img}`).classList.remove("semi-aparecer")
-                document.querySelector(`#${id_img}`).classList.add("semi-desaparecer")
+            if (!document.querySelector(`#${id_img}`).classList.contains(CLASS_CHECKED_CHECKBOX_VOTO)) {
+                document.querySelector(`#${id_img}`).classList.remove(CLASS_SEMIAPARECER_CHECKBOX_VOTO)
+                document.querySelector(`#${id_img}`).classList.add(CLASS_SEMIDESAPARECER_CHECKBOX_VOTO)
             }
         })
         boton.addEventListener("transitionend", () => {
@@ -201,12 +211,12 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
         //evento votar
 
         boton.addEventListener("click", (e) => {
-            const id_seleccionado = (e.target.id).replace("checkbox-opcion-encuesta-", "").replace("img-check-votado-", "").split("-") //[id encuesta,opcion encuesta]
+            const id_seleccionado = (e.target.id).replace(PARTE_ID_REMPLAZAR_CHECKBOX_VOTO, "").replace(PARTE_ID_REMPLAZAR_IMG_CHECK, "").split("-") //[id encuesta,opcion encuesta]
             function votar(voto_unico) {
                 function actualizar_contador(contador, id_encuesta, opcion_votada) {
                     //actualizar contador votos
-                    const id_contador = `numero-votantes-bt-lista-${id_encuesta}-${opcion_votada}`
-                    document.querySelector(`#${id_contador}`).innerHTML = "*Votos: " + contador
+                    const id_contador = `${PARTE_ID_CONTADOR_VOTANTES}${id_encuesta}-${opcion_votada}`
+                    document.querySelector(`#${id_contador}`).innerHTML = TEXTO_CONTADOR_VOTOS + contador
                 }
                 const id_nombre = getBrowserFingerprint()
                 //ver si ya existe ese voto
@@ -221,12 +231,12 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                             borrar_votacion_encuesta(id_nombre.toString(), Number(id_seleccionado[0]), Number(id_seleccionado[1])).then(() => {
                                 //mostrar cambios en el html
                                 const id_img = boton.firstElementChild.id
-                                document.querySelector(`#${id_img}`).classList.remove("checked")
-                                document.querySelector(`#${id_img}`).classList.remove("semi-aparecer")
-                                document.querySelector(`#${id_img}`).classList.add("semi-desaparecer")
+                                document.querySelector(`#${id_img}`).classList.remove(CLASS_CHECKED_CHECKBOX_VOTO)
+                                document.querySelector(`#${id_img}`).classList.remove(CLASS_SEMIAPARECER_CHECKBOX_VOTO)
+                                document.querySelector(`#${id_img}`).classList.add(CLASS_SEMIDESAPARECER_CHECKBOX_VOTO)
 
-                                document.querySelector(`#opcion-encuesta-${id_seleccionado[1]}`).classList.remove("opcion-votado")
-                                document.querySelector(`#opcion-encuesta-${id_seleccionado[1]}`).classList.add("opcion-no-votado")
+                                document.querySelector(`#${PARTE_ID_USAR_OPCION_VOTACION}${id_seleccionado[1]}`).classList.remove(CLASS_OPCION_VOTADA)
+                                document.querySelector(`#${PARTE_ID_USAR_OPCION_VOTACION}${id_seleccionado[1]}`).classList.add("opcion-no-votado")
                                 //actualizar cache votos
                                 const datos_votos_guardar = votaciones.filter(x => !(x.id_nombre == id_nombre && x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
                                 window.sessionStorage.setItem("votaciones", JSON.stringify(datos_votos_guardar))
@@ -246,11 +256,11 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                             añadir_votacion_encuesta(datos_enviar_voto).then(() => {
                                 //mostrar cambios en el html
                                 const id_img = boton.firstElementChild.id
-                                document.querySelector(`#${id_img}`).classList.remove("semi-desaparecer")
+                                document.querySelector(`#${id_img}`).classList.remove(CLASS_SEMIDESAPARECER_CHECKBOX_VOTO)
 
-                                document.querySelector(`#${id_img}`).classList.add("checked")
-                                document.querySelector(`#opcion-encuesta-${id_seleccionado[1]}`).classList.remove("opcion-no-votado")
-                                document.querySelector(`#opcion-encuesta-${id_seleccionado[1]}`).classList.add("opcion-votado")
+                                document.querySelector(`#${id_img}`).classList.add(CLASS_CHECKED_CHECKBOX_VOTO)
+                                document.querySelector(`#${PARTE_ID_USAR_OPCION_VOTACION}${id_seleccionado[1]}`).classList.remove("opcion-no-votado")
+                                document.querySelector(`#${PARTE_ID_USAR_OPCION_VOTACION}${id_seleccionado[1]}`).classList.add(CLASS_OPCION_VOTADA)
                                 //actualizar cache votos
                                 const datos_votos_guardar = votaciones
                                 datos_votos_guardar.push({ "id_nombre": String(id_nombre), "id_encuesta": Number(id_seleccionado[0]), "opcion_votada_encuesta": Number(id_seleccionado[1]), "nombre_votante": nombre_votante, "bono_votante": Boolean(bono_votante) })
@@ -267,11 +277,11 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                             borrar_votacion_encuesta(id_nombre.toString(), Number(id_seleccionado[0]), Number(id_seleccionado[1])).then(() => {
                                 //mostrar cambios en el html
                                 const id_img = boton.firstElementChild.id
-                                document.querySelector(`#${id_img}`).classList.remove("checked")
-                                document.querySelector(`#${id_img}`).classList.remove("semi-aparecer")
-                                document.querySelector(`#${id_img}`).classList.add("semi-desaparecer")
-                                document.querySelector(`#opcion-encuesta-${id_seleccionado[1]}`).classList.remove("opcion-votado")
-                                document.querySelector(`#opcion-encuesta-${id_seleccionado[1]}`).classList.add("opcion-no-votado")
+                                document.querySelector(`#${id_img}`).classList.remove(CLASS_CHECKED_CHECKBOX_VOTO)
+                                document.querySelector(`#${id_img}`).classList.remove(CLASS_SEMIAPARECER_CHECKBOX_VOTO)
+                                document.querySelector(`#${id_img}`).classList.add(CLASS_SEMIDESAPARECER_CHECKBOX_VOTO)
+                                document.querySelector(`#${PARTE_ID_USAR_OPCION_VOTACION}${id_seleccionado[1]}`).classList.remove(CLASS_OPCION_VOTADA)
+                                document.querySelector(`#${PARTE_ID_USAR_OPCION_VOTACION}${id_seleccionado[1]}`).classList.add("opcion-no-votado")
                                 //actualizar cache votos
                                 const datos_votos_guardar = votaciones.filter(x => !(x.id_nombre == id_nombre && x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
                                 window.sessionStorage.setItem("votaciones", JSON.stringify(datos_votos_guardar))
@@ -393,7 +403,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                         item.remove()
                     })
                 }
-                let id = contador.id.replace("numero-votantes-bt-lista-", "").split("-")//[id encuesta,opcion encuesta]
+                let id = contador.id.replace(PARTE_ID_CONTADOR_VOTANTES, "").split("-")//[id encuesta,opcion encuesta]
                 function mostrar_datos_resumen(contador, contador_bono, nombres_mostrar) {
                     document.querySelector("#main").insertAdjacentHTML("afterend", `<div  id="mini-analisis-opcion"class="mini-analisis-opcion aparecer">
                         <table>
