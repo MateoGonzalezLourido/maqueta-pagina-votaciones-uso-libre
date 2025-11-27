@@ -11,6 +11,7 @@ una pagina para votaciones, que cualquiera puede copiar para uso propio
 -cosigo fácil de adaptar
 
 
+
 ##como funciona
 
 
@@ -21,6 +22,7 @@ una pagina para votaciones, que cualquiera puede copiar para uso propio
 -js/html/css
 
 -supabase
+
 
 
 #*Como usarlo:
@@ -38,6 +40,8 @@ VITE_SUPABASE_KEY=tu_key
 -ejecutarlo localhost: npm run dev (en la raiz del proyecto)
 
 o npm run dev --host (para crear un enlace por ip privada para que accedan otros de tu red)
+
+
 
 
 #*Estructura:
