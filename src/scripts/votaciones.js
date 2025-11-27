@@ -5,6 +5,7 @@ import { getBrowserFingerprint } from './datos_usuario_control.js'
 /*ALGUNAS VARIABLES O FUNCIONES PARA HACERLAS MAS ACCESIBLES */
 const NAME_DT_LOC_BONO_VARIABLE = "bono_variable"
 const NAME_DT_LOC_NOMBRE_VARIABLE = "nombre_variable"
+const NAME_DT_LOC_VOTACIONES="votaciones"
 const CLASS_CHECKED_CHECKBOX_VOTO = "checked"
 const CLASS_SEMIDESAPARECER_CHECKBOX_VOTO = "semi-desaparecer"
 const CLASS_SEMIAPARECER_CHECKBOX_VOTO = "semi-aparecer"
@@ -15,6 +16,10 @@ const PARTE_ID_REMPLAZAR_IMG_CHECK = "img-check-votado-"
 const PARTE_ID_CONTADOR_VOTANTES= "numero-votantes-bt-lista-"
 const TEXTO_CONTADOR_VOTOS = "*Votos: "
 const URL_CHECKED_IMG = "/checked.svg"
+const TEXTO_VOTO_UNICO="*voto único"
+const TEXTO_VOTO_MULTIPLE="*voto múltiple"
+const $id_select_encuestas = "select-encuestas"
+const PARTE_ID_BT_ANALIZAR_DATOS="bt-analizar-datos-encuesta-"
 //supabase datos
 const NOMBRE_TABLA_ENCUESTAS = "encuestas"
 const NOMBRE_TABLA_VOTACIONES = "encuestas_votaciones"
@@ -154,19 +159,18 @@ function mirar_opciones_votadas(votaciones) {
 }
 function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_votadas) {
     let voto_unico = data.find(x => x.id_encuesta == encuesta_id)
-    voto_unico = voto_unico.voto_unico ? "*voto único" : "*voto múltiple"
-    const $id_select_encuestas = "select-encuestas"
+    voto_unico = voto_unico.voto_unico ? TEXTO_VOTO_UNICO : TEXTO_VOTO_MULTIPLE
     document.querySelector("#main").innerHTML = `
         <select id="${$id_select_encuestas}">
         ${generar_titulos_encuestas(data, encuesta_id)}
         </select>
         <div class="div-juntar-todo-cuerpo-opciones">
         <span class="tipo-voto">${voto_unico}</span>
-        <section id="cuerpo-opciones">
+        <section class="cuerpo-opciones">
         ${generar_opciones_encuestas(data, encuesta_id, contador_votaciones, opciones_votadas)}
         </section></div>
         <section id="datos-analizar">
-        <button id="bt-analizar-datos-encuesta-${encuesta_id}" class="bt-analizar-datos">Analizar Datos</button>
+        <button id="${PARTE_ID_BT_ANALIZAR_DATOS}${encuesta_id}" class="bt-analizar-datos">Analizar Datos</button>
         </section>
         `
     //evento cambio de encuesta
@@ -178,7 +182,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
             let contador_votaciones = contador_votos(votaciones, encuesta_escogida.id_encuesta)
             let opciones_votadas = mirar_opciones_votadas(votaciones, encuesta_escogida.id_encuesta)
             //crear datos guardado de las votaciones de la encuesta para reducir solicitudes a la base de datos
-            window.sessionStorage.setItem("votaciones", JSON.stringify(votaciones))
+            window.sessionStorage.setItem(NAME_DT_LOC_VOTACIONES, JSON.stringify(votaciones))
             //actualizar pagina
             generar_encuestas(data, encuesta_escogida.id_encuesta, contador_votaciones, opciones_votadas)
         })
@@ -239,7 +243,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                                 document.querySelector(`#${PARTE_ID_USAR_OPCION_VOTACION}${id_seleccionado[1]}`).classList.add("opcion-no-votado")
                                 //actualizar cache votos
                                 const datos_votos_guardar = votaciones.filter(x => !(x.id_nombre == id_nombre && x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
-                                window.sessionStorage.setItem("votaciones", JSON.stringify(datos_votos_guardar))
+                                window.sessionStorage.setItem(NAME_DT_LOC_VOTACIONES, JSON.stringify(datos_votos_guardar))
 
                                 const contador_votos = datos_votos_guardar.filter(x => (x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
                                 actualizar_contador(contador_votos.length, id_seleccionado[0], id_seleccionado[1])
@@ -264,7 +268,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                                 //actualizar cache votos
                                 const datos_votos_guardar = votaciones
                                 datos_votos_guardar.push({ "id_nombre": String(id_nombre), "id_encuesta": Number(id_seleccionado[0]), "opcion_votada_encuesta": Number(id_seleccionado[1]), "nombre_votante": nombre_votante, "bono_votante": Boolean(bono_votante) })
-                                window.sessionStorage.setItem("votaciones", JSON.stringify(datos_votos_guardar))
+                                window.sessionStorage.setItem(NAME_DT_LOC_VOTACIONES, JSON.stringify(datos_votos_guardar))
 
                                 const contador_votos = datos_votos_guardar.filter(x => (x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
                                 actualizar_contador(contador_votos.length, id_seleccionado[0], id_seleccionado[1])
@@ -284,7 +288,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                                 document.querySelector(`#${PARTE_ID_USAR_OPCION_VOTACION}${id_seleccionado[1]}`).classList.add("opcion-no-votado")
                                 //actualizar cache votos
                                 const datos_votos_guardar = votaciones.filter(x => !(x.id_nombre == id_nombre && x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
-                                window.sessionStorage.setItem("votaciones", JSON.stringify(datos_votos_guardar))
+                                window.sessionStorage.setItem(NAME_DT_LOC_VOTACIONES, JSON.stringify(datos_votos_guardar))
 
                                 const contador_votos = datos_votos_guardar.filter(x => (x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
                                 actualizar_contador(contador_votos.length, id_seleccionado[0], id_seleccionado[1])
@@ -300,7 +304,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
     })
 
     //evento analizar datos
-    const $bt_analizar_datos = document.querySelector(`#bt-analizar-datos-encuesta-${encuesta_id}`)
+    const $bt_analizar_datos = document.querySelector(`#${PARTE_ID_BT_ANALIZAR_DATOS}${encuesta_id}`)
     $bt_analizar_datos.addEventListener("click", () => {
         $bt_analizar_datos.style.cursor = "progress"//puntero cargando
         conseguir_datos_SUPABASE({ "encuesta_id": encuesta_id, "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuesta => {
@@ -421,7 +425,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                             </div>`)
                 }
                 //mirar si ya hay datos creados
-                let datos_guardado = window.sessionStorage.getItem("votaciones") ? JSON.parse(window.sessionStorage.getItem("votaciones")) : []
+                let datos_guardado = window.sessionStorage.getItem(NAME_DT_LOC_VOTACIONES) ? JSON.parse(window.sessionStorage.getItem(NAME_DT_LOC_VOTACIONES)) : []
 
                 //mirar si existe datos sobre mi encuesta-opcion
                 const datos_opcion_buscar = datos_guardado.find(x => x.id == id[0] && x.opcion == id[1])
@@ -429,7 +433,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                     mostrar_datos_resumen(datos_opcion_buscar.datos.contador, datos_opcion_buscar.datos.contador_bono, datos_opcion_buscar.datos.nombres_mostrar)
                 }
                 else {//no existe: crear + actualizar
-                    const votaciones = JSON.parse(window.sessionStorage.getItem("votaciones")) //acceder a los datos de guardado de las votaciones
+                    const votaciones = JSON.parse(window.sessionStorage.getItem(NAME_DT_LOC_VOTACIONES)) //acceder a los datos de guardado de las votaciones
                     let contador = 0
                     let contador_bono = 0
                     let nombres = {
@@ -512,7 +516,7 @@ globalThis.addEventListener("DOMContentLoaded", () => {
             //crear/mostrar opciones de la encuesta para votar y sus votos
             let opciones_votadas = mirar_opciones_votadas(votaciones)
             //opciones
-            window.sessionStorage.setItem("votaciones", JSON.stringify(votaciones))
+            window.sessionStorage.setItem(NAME_DT_LOC_VOTACIONES, JSON.stringify(votaciones))
             generar_encuestas(data, encuesta_id, contador_votaciones, opciones_votadas)
         })
     })
