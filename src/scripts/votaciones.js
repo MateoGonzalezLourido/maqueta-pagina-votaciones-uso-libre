@@ -132,7 +132,7 @@ const generar_opciones_encuestas = (encuestas, encuesta_id, contador_votaciones,
                 //esto es para bloquear o no las animaciones de los check al iniciar la pagina 
                 const display = checked ? "block" : "none"
                 const clase = display == "block" ? CLASS_CHECKED_CHECKBOX_VOTO : CLASS_SEMIDESAPARECER_CHECKBOX_VOTO
-                const clase_opcion = display == "block" ? CLASS_OPCION_VOTADA : ""
+                const clase_opcion = display == "block" ? CLASS_OPCION_VOTADA : CLASS_OPCION_NO_VOTADA
                 html_opciones += `<div class="opcion-votacion ${clase_opcion}"id="${PARTE_ID_USAR_OPCION_VOTACION}${i}">
                             <div>
                                 <h3>${encuesta.opciones[i]}</h3>

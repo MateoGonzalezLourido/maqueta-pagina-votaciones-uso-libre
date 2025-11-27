@@ -14,22 +14,27 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-display: swap;
+
 }
 
 a {
   font-weight: 500;
-  color: #94e10f;
+  color: #08b38eee;
   text-decoration: inherit;
   transition: 0.15s;
+  text-shadow: 0px 0px 2px rgba(0, 0, 0, 0.432);
 }
 
 a:hover {
-  color: #8ed80eee;
+  color: #10d0a6ee;
   transition: 0.15s;
 }
 
 body {
   overflow: auto;
+  font-display: swap;
+
 }
 
 #app {
@@ -53,12 +58,13 @@ body {
 .usuario #bt-usuario {
   width: 150px;
   padding: 2px;
-  height: 21px;
+  height: 22px;
   text-align: center;
   cursor: pointer;
   border-radius: 3px;
   font-size: 14px;
-  border: #76b900 1px solid;
+  border: #0b987a 1px solid;
+  box-shadow: 0px 0px 2px #00b991;
   transition: 0.2s;
   user-select: none;
   background-color: #121313a8;
@@ -79,7 +85,7 @@ body {
 }
 
 .usuario #menu-usuario {
-  background-color: #75b900;
+  background-color: #00b991;
   color: #080808;
   font-weight: 500;
   width: 250px;
@@ -237,15 +243,9 @@ main {
   margin-bottom: 3px;
 }
 
-#pagina-datos-analizados-encuesta table th {
-  border: 1px solid white;
-  border-collapse: collapse;
-  padding: 8px;
-  overflow: auto;
-}
 
 #pagina-datos-analizados-encuesta table td {
-  border: 1px solid white;
+  border: 1px solid rgba(255, 255, 255, 0.911);
   border-collapse: collapse;
   padding: 8px;
   overflow: auto;
@@ -260,7 +260,7 @@ main {
   cursor: pointer;
   height: 40px;
   border-radius: 6px;
-  background-color: #76b900;
+  background-color: #00b991;
   color: #080808;
   font-family: "Roboto", sans-serif;
   font-weight: 500;
@@ -280,10 +280,11 @@ main {
   cursor: default;
 }
 
-#cuerpo-opciones {
+.cuerpo-opciones {
   margin: 0;
-  background-color: #08080846;
+  background-color: #08080863;
   border-radius: 5px;
+  overflow: hidden;
 }
 
 .opcion-votacion {
@@ -324,7 +325,7 @@ main {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0px 0px 2.4px #42b80b8d;
+  box-shadow: 0px 0px 2.4px #0bb86d8d;
   background-color: #08080866;
   position: relative;
   top: 5px;
@@ -472,11 +473,11 @@ main {
 }
 
 .opcion-votado {
-  background-color: #13342936;
+  background-color: #1c4036;
   transition: 0.3s;
 }
 
 .opcion-no-votado {
-  background-color: transparent;
   transition: 0.3s;
+  background-color: #11111955;
 }
