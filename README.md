@@ -41,11 +41,11 @@ o npm run dev --host (para crear un enlace por ip privada para que accedan otros
 
 
 #*Estructura:
-/public/ > imagenes
+~/public/ > imagenes
 
-/src/ > main(donde debes importar todo el cosigo que quieres que se ejecute en la pagina)
+~/src/ > main(donde debes importar todo el cosigo que quieres que se ejecute en la pagina)
 
-/src/scripts/ > las funciones de la pagina(en ella hay un .js que controla los datos del usuario[nombre, bono , generador id].
+~/src/scripts/ > las funciones de la pagina(en ella hay un .js que controla los datos del usuario[nombre, bono , generador id].
 En el otro .js están todas las otras funciones de la página .
 
 Si quieres usar funciones de un .js en otro debes importar o la funcion o el .js en ese otro .js donde lo quieres.
