@@ -3,16 +3,23 @@ una pagina para votaciones, que cualquiera puede copiar para uso propio
 
 #Caracteristicas
 
+
 crea votaciones
+
 diseño responsive
+
 cosigo fácil de adaptar
 
+
 ##como funciona
+
 
 #*Tecnologías usadas:
 
 Vite
+
 js/html/css
+
 supabase
 
 #*Como usarlo:
