@@ -397,6 +397,7 @@ main {
   box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.871);
   background-color: #111119;
   overflow: auto;
+  z-index: 10;
 }
 
 .aparecer {
@@ -480,4 +481,65 @@ main {
 .opcion-no-votado {
   transition: 0.3s;
   background-color: #11111955;
+}
+
+.mostrar-menu-log {
+  display: block;
+  animation: check 0.25s forwards;
+}
+
+.quitar-menu-log {
+  display: none;
+  opacity: 0;
+}
+
+#bt-abrir-menu-log-admin {
+  position: absolute;
+  z-index: 2;
+  right: 10px;
+  width: 80px;
+  padding: 2px;
+  height: 22px;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 14px;
+  border: #0b987a 1px solid;
+  box-shadow: 0px 0px 2px #00b991;
+  transition: 0.2s;
+  user-select: none;
+  background-color: #121313a8;
+}
+
+#bt-abrir-menu-log-admin span {
+  color: #eeeeeeee;
+  font-weight: 600;
+  letter-spacing: 0px;
+}
+
+#bt-abrir-menu-log-admin:hover {
+  transition: 0.25s;
+  font-size: 14.4px;
+  padding: 2px;
+  letter-spacing: 0.1px;
+  background-color: #2b2e6617;
+}
+
+#menu-log-gestionador-encuestas {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+}
+
+#menu-log-gestionador-encuestas input {
+  width: 110px;
+  border-radius: 3px;
+  padding: 3px;
+  height: 20px;
+  outline: none;
+  background-color: #121313a8;
+  font-size: 14px;
+  color: #eeeeeeee;
+  border: #0b987a 1px solid;
+  text-align: center;
 }

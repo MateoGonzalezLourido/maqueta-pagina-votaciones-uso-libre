@@ -1,11 +1,14 @@
 import './style.css'
 import './scripts/datos_usuario_control.js'
 import './scripts/votaciones.js'
+import './scripts/gestionar_encuestas.js'
 
 /*CODIGO */
 const URL_REPOSITORIO_ORIGINAL = "https://github.com/MateoGonzalezLourido/maqueta-pagina-votaciones-uso-libre"
+const URL_IMG_GESTION_ENCUESTAS=""
 
 document.querySelector('#app').innerHTML = `
+<div id="bt-abrir-menu-log-admin"><span>*ADMIN*</span></div>
   <div class="usuario">
     <div id="bt-usuario"><span>*Datos Usuario*</span></div>
       <div id="menu-usuario">
@@ -25,6 +28,7 @@ document.querySelector('#app').innerHTML = `
   <div id="pagina-datos-analizados-encuesta"></div>
   </div>
   <div class="footer"><a href="${URL_REPOSITORIO_ORIGINAL}">Github repositorio</a></div>
+  <div id="menu-log-gestionador-encuestas" class="display-none"><input id="input-password-admin" type="password" value=""placeholder="*ADMIN KEY"></div>
 `
 
 //!!!! importante quitar esto si quieres desarrollar la pagina-> bloquea el inspection y otros contextmenu (este bloqueo se metio porque en el telefono al pulsar en la imagen para votar saltaba un contextmenu y afecta a la comodidad del uso de la pagina en el telefono)

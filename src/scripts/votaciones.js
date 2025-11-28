@@ -499,14 +499,13 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
             if (document.querySelector(`#${$MINI_ANALISIS_DATOS}`)) {
                 document.querySelector(`#${$MINI_ANALISIS_DATOS}`).classList.remove(CLASS_APARECER_CHECKBOX_VOTO)
                 document.querySelector(`#${$MINI_ANALISIS_DATOS}`).classList.add(CLASS_DESAPARECER_CHECKBOX_VOTO)
-                document.querySelector(`#${$MINI_ANALISIS_DATOS}`).addEventListener("transitionend", () => {
+                document.querySelector(`#${$MINI_ANALISIS_DATOS}`).addEventListener("animationend", () => {
                     if (getComputedStyle(document.querySelector(`#${$MINI_ANALISIS_DATOS}`)).opacity === "0") {
                         document.querySelector(`#${$MINI_ANALISIS_DATOS}`).style.display = "none";
                     }
                 })
             }
         })
-
     })
 }
 
