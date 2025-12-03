@@ -1,6 +1,5 @@
 /*Importar cosas necesarias para el codigo */
 import { supabase } from '../supabase/supabase'
-import { serve } from "https://deno.land/std/http/server.ts";
 
 /*VARIABLES */
 const NOMBRE_TABLA_DEFECTO_USAR = "encuestas"

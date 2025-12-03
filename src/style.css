@@ -438,11 +438,11 @@ main {
 
 .semi-desaparecer {
   opacity: 0;
-  transition: opacity 0.26s ease;
+  transition:opacity 1s cubic-bezier(.21,.98,.87,.78);
 }
 
 .checked {
-  display: block;
+  display: block !important;
   animation: check 0.25s forwards;
 }
 
