@@ -184,7 +184,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
     let voto_unico = data.find(x => x.id_encuesta == encuesta_id)
     voto_unico = voto_unico.voto_unico ? TEXTO_VOTO_UNICO : TEXTO_VOTO_MULTIPLE
     let caracteristicas_votacion=""
-    if(datos_anonimos)caracteristicas_votacion+="<span class='tipo-voto'>*resultados privados</span>"
+    if(datos_anonimos)caracteristicas_votacion+="<span   class='tipo-voto'>*resultados privados</span>"
     if(votacion_anonima)caracteristicas_votacion+="<span class='tipo-voto'>*voto anónimo</span>"
     document.querySelector("#main").innerHTML = `
         <select id="${$id_select_encuestas}">
