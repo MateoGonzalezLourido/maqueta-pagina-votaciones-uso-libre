@@ -1,5 +1,6 @@
 /*Importar cosas necesarias para el codigo */
 import { supabase } from '../supabase/supabase'
+import { serve } from "https://deno.land/std/http/server.ts";
 
 /*VARIABLES */
 const NOMBRE_TABLA_DEFECTO_USAR = "encuestas"
@@ -55,11 +56,9 @@ const añadir_votacion_encuesta = async ({ id_nombre, id_encuesta, opcion_votada
     }
 }
 
-function verificar_acceso_admin(entrada) {
-    let adminKey = import.meta.env.ADMIN_KEY
-    if (adminKey) adminKey.toString()
-    console.log(adminKey, entrada)
-    if (adminKey === entrada) return true
+function verificar_acceso_admin(entrada) {//132546781535
+    const ADMIN_KEY = Deno.env.get("ADMIN_KEY");
+    if (adminKey == entrada) return true
     return false
 }
 
@@ -100,8 +99,7 @@ globalThis.addEventListener("DOMContentLoaded", () => {
             })
             document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).addEventListener("keydown", (e) => {
                 if (e.key === "Enter") {
-                    const entrada_key_log = (document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).value.replace(/[.\\/;,!#{}%&$"'*]/g, " ")).toString()
-
+                    const entrada_key_log = (document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).value.replace(/[.\\/;,!#{}%&$"'*]/g, " ").trim()).toString()
                     if (verificar_acceso_admin(entrada_key_log)) {
                         console.log(MENSAJE_ACCESO_CORRECTO)
                         document.querySelector("#app").innerHTML = `

@@ -179,6 +179,8 @@ function mirar_opciones_votadas(votaciones) {
 }
 //ES EL "MAIN" O "CONTROLADOR" DE LAS ENCUESTAS 
 function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_votadas) {
+    const datos_anonimos = data.datos_anonimos
+    const votacion_anonima = data.voto_anonimo
     let voto_unico = data.find(x => x.id_encuesta == encuesta_id)
     voto_unico = voto_unico.voto_unico ? TEXTO_VOTO_UNICO : TEXTO_VOTO_MULTIPLE
     document.querySelector("#main").innerHTML = `
@@ -190,10 +192,14 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
         <section class="cuerpo-opciones">
         ${generar_opciones_encuestas(data, encuesta_id, contador_votaciones, opciones_votadas)}
         </section></div>
+        `
+    if (!datos_anonimos) {
+        document.querySelector("#main").innerHTML += `
         <section id="datos-analizar">
         <button id="${PARTE_ID_BT_ANALIZAR_DATOS}${encuesta_id}" class="bt-analizar-datos">${TEXTO_ANALIZAR_DATOS_BT}</button>
         </section>
         `
+    }
     //evento cambio de encuesta
     document.querySelector(`#${$id_select_encuestas}`).addEventListener("change", (e) => {
         const titulo_escogido = e.target.value
@@ -234,7 +240,6 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
             }
         })
         //evento votar
-
         boton.addEventListener("click", (e) => {
             const id_seleccionado = (e.target.id).replace(PARTE_ID_REMPLAZAR_CHECKBOX_VOTO, "").replace(PARTE_ID_REMPLAZAR_IMG_CHECK, "").split("-") //[id encuesta,opcion encuesta]
             function votar(voto_unico) {
@@ -252,7 +257,16 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                         unico_voto_realizado = votaciones.find(x => x.id_nombre == id_nombre && x.id_encuesta == id_seleccionado[0])
                     }
 
-                    if ((!voto_unico && existe) || (unico_voto_realizado && existe)) {
+                    if (
+                        existe && (        // ya hay voto previo
+                            !voto_unico || // modo multi-voto → borrar siempre
+                            (
+                                unico_voto_realizado &&               // hay voto único previo
+                                unico_voto_realizado.id_encuesta == id_seleccionado[0] &&
+                                unico_voto_realizado.opcion_votada_encuesta == id_seleccionado[1]
+                            )
+                        )
+                    ) {
                         borrar_votacion_encuesta(id_nombre.toString(), Number(id_seleccionado[0]), Number(id_seleccionado[1])).then(() => {
                             //mostrar cambios en el html
                             const id_img = boton.firstElementChild.id
@@ -264,15 +278,19 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                             document.querySelector(`#${PARTE_ID_USAR_OPCION_VOTACION}${id_seleccionado[1]}`).classList.add(CLASS_OPCION_NO_VOTADA)
                             //actualizar cache votos
                             const datos_votos_guardar = votaciones.filter(x => !(x.id_nombre == id_nombre && x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
-                            window.sessionStorage.setItem(NAME_DT_LOC_VOTACIONES, JSON.stringify(datos_votos_guardar))
-
+                            if (!votacion_anonima) {
+                                window.sessionStorage.setItem(NAME_DT_LOC_VOTACIONES, JSON.stringify(datos_votos_guardar))
+                            }
                             const contador_votos = datos_votos_guardar.filter(x => (x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
                             actualizar_contador(contador_votos.length, id_seleccionado[0], id_seleccionado[1])
                         })
                     }
-                    else if ((!voto_unico && existe) || (!unico_voto_realizado && !existe)) {
-                        let nombre_votante = window.localStorage.getItem(NAME_DT_LOC_NOMBRE_VARIABLE) ? window.localStorage.getItem(NAME_DT_LOC_NOMBRE_VARIABLE) : "anónimo"
-                        nombre_votante = nombre_votante.replace(/\n+/g, "").replace(/\s+/g, " ").replace(/[0-9|.<>,#;]/g, "").replaceAll("no bono", "").replaceAll("(bono)", "").replaceAll("bono", "")
+                    else if (!existe && (  !voto_unico ||  !unico_voto_realizado )){
+                        let nombre_votante = "anónimo"
+                        if (!votacion_anonima) {
+                            nombre_votante = window.localStorage.getItem(NAME_DT_LOC_NOMBRE_VARIABLE) ? window.localStorage.getItem(NAME_DT_LOC_NOMBRE_VARIABLE) : "anónimo"
+                            nombre_votante = nombre_votante.replace(/\n+/g, "").replace(/\s+/g, " ").replace(/[0-9|.<>,#;]/g, "").replaceAll("no bono", "").replaceAll("(bono)", "").replaceAll("bono", "")
+                        }
                         let bono_votante = window.localStorage.getItem(NAME_DT_LOC_BONO_VARIABLE)
                         if (bono_votante != "true") bono_votante = false
                         const datos_enviar_voto = {
@@ -295,25 +313,6 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                             actualizar_contador(contador_votos.length, id_seleccionado[0], id_seleccionado[1])
                         })
                     }
-                    else {
-                        if (unico_voto_realizado.id_encuesta == id_seleccionado[0] && unico_voto_realizado.opcion_votada_encuesta == id_seleccionado[1]) {//es la opcion votada-> borrar
-                            borrar_votacion_encuesta(id_nombre.toString(), Number(id_seleccionado[0]), Number(id_seleccionado[1])).then(() => {
-                                //mostrar cambios en el html
-                                const id_img = boton.firstElementChild.id
-                                document.querySelector(`#${id_img}`).classList.remove(CLASS_CHECKED_CHECKBOX_VOTO)
-                                document.querySelector(`#${id_img}`).classList.remove(CLASS_SEMIAPARECER_CHECKBOX_VOTO)
-                                document.querySelector(`#${id_img}`).classList.add(CLASS_SEMIDESAPARECER_CHECKBOX_VOTO)
-                                document.querySelector(`#${PARTE_ID_USAR_OPCION_VOTACION}${id_seleccionado[1]}`).classList.remove(CLASS_OPCION_VOTADA)
-                                document.querySelector(`#${PARTE_ID_USAR_OPCION_VOTACION}${id_seleccionado[1]}`).classList.add(CLASS_OPCION_NO_VOTADA)
-                                //actualizar cache votos
-                                const datos_votos_guardar = votaciones.filter(x => !(x.id_nombre == id_nombre && x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
-                                window.sessionStorage.setItem(NAME_DT_LOC_VOTACIONES, JSON.stringify(datos_votos_guardar))
-
-                                const contador_votos = datos_votos_guardar.filter(x => (x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1]))
-                                actualizar_contador(contador_votos.length, id_seleccionado[0], id_seleccionado[1])
-                            })
-                        }
-                    }
                 })
             }
             conseguir_datos_SUPABASE({ "encuesta_id": id_seleccionado[0], "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuesta => {
@@ -321,79 +320,79 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
             })
         })
     })
-
     //evento analizar datos
     const $bt_analizar_datos = document.querySelector(`#${PARTE_ID_BT_ANALIZAR_DATOS}${encuesta_id}`)
-    $bt_analizar_datos.addEventListener("click", () => {
-        const $pagina_datos_analizados_encuesta = document.querySelector(`#${$ID_PAGINA_DATOS_ANALIZAR_VOTACION}`)
-        $bt_analizar_datos.style.cursor = "progress"//puntero cargando
-        conseguir_datos_SUPABASE({ "encuesta_id": encuesta_id, "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuesta => {
-            conseguir_datos_SUPABASE({ "encuesta_id": encuesta_id, "tabla": NOMBRE_TABLA_VOTACIONES }).then(votaciones => {
-                $bt_analizar_datos.style.cursor = "pointer"//quitar puntero cargando
-                const contador_votaciones = contador_votos(votaciones)
-                const mostrar_recuento_votos = () => {
-                    let html = ``
-                    html += `<tr><td>Opción</td><td>nºvotos</td><td>nºbonos</br>(confirmados)</td></tr>`
-                    let opciones_ordenadas_mayor = contador_votaciones.sort((x, y) => y.votantes.length - x.votantes.length)
-                    opciones_ordenadas_mayor.forEach(datos_op => {
-                        let recuento_bonos = 0
-                        datos_op.votantes.forEach(vt => {
-                            if (vt.bono) recuento_bonos++
-                        })
-                        html += `<tr>
+    if ($bt_analizar_datos) {
+        $bt_analizar_datos.addEventListener("click", () => {
+            const $pagina_datos_analizados_encuesta = document.querySelector(`#${$ID_PAGINA_DATOS_ANALIZAR_VOTACION}`)
+            $bt_analizar_datos.style.cursor = "progress"//puntero cargando
+            conseguir_datos_SUPABASE({ "encuesta_id": encuesta_id, "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuesta => {
+                conseguir_datos_SUPABASE({ "encuesta_id": encuesta_id, "tabla": NOMBRE_TABLA_VOTACIONES }).then(votaciones => {
+                    $bt_analizar_datos.style.cursor = "pointer"//quitar puntero cargando
+                    const contador_votaciones = contador_votos(votaciones)
+                    const mostrar_recuento_votos = () => {
+                        let html = ``
+                        html += `<tr><td>Opción</td><td>nºvotos</td><td>nºbonos</br>(confirmados)</td></tr>`
+                        let opciones_ordenadas_mayor = contador_votaciones.sort((x, y) => y.votantes.length - x.votantes.length)
+                        opciones_ordenadas_mayor.forEach(datos_op => {
+                            let recuento_bonos = 0
+                            datos_op.votantes.forEach(vt => {
+                                if (vt.bono) recuento_bonos++
+                            })
+                            html += `<tr>
                             <td>${encuesta[0].opciones[datos_op.id]}</td>
                             <td>${[datos_op.votantes.length]}</td>
                             <td>${recuento_bonos}</td>
                             </tr>`
-                    })
-                    return html
-                }
-                const mostrar_nombre_votantes = () => {
-                    let html = ``
-                    html += `<tr><td>Opción</td><td>Votantes</td></tr>`
-                    let opciones_ordenadas_mayor = contador_votaciones.sort((x, y) => y.votantes.length - x.votantes.length)
-                    opciones_ordenadas_mayor.forEach(datos_op => {
-                        let usuario_datos = {
-                            "identificados": [],
-                            "anonimos": {
-                                "totales": 0,
-                                "bonos": 0
+                        })
+                        return html
+                    }
+                    const mostrar_nombre_votantes = () => {
+                        let html = ``
+                        html += `<tr><td>Opción</td><td>Votantes</td></tr>`
+                        let opciones_ordenadas_mayor = contador_votaciones.sort((x, y) => y.votantes.length - x.votantes.length)
+                        opciones_ordenadas_mayor.forEach(datos_op => {
+                            let usuario_datos = {
+                                "identificados": [],
+                                "anonimos": {
+                                    "totales": 0,
+                                    "bonos": 0
+                                }
                             }
-                        }
-                        datos_op.votantes.forEach(vt => {
-                            if (vt.nombre != "anónimo") {
-                                if (vt.bono == true) {
-                                    usuario_datos.identificados.push(`${vt.nombre}(bono)`)
+                            datos_op.votantes.forEach(vt => {
+                                if (vt.nombre != "anónimo") {
+                                    if (vt.bono == true) {
+                                        usuario_datos.identificados.push(`${vt.nombre}(bono)`)
+                                    }
+                                    else {
+                                        usuario_datos.identificados.push(vt.nombre)
+                                    }
                                 }
                                 else {
-                                    usuario_datos.identificados.push(vt.nombre)
+                                    usuario_datos.anonimos.totales++
+                                    if (vt.bono == true) usuario_datos.anonimos.bonos++
+                                }
+                            })
+                            let usuarios = ``
+                            if (usuario_datos.anonimos.totales != 0) {
+                                usuarios += `*${VALOR_DEFECTO_NOMBRE_USUARIO} (bonos: ${usuario_datos.anonimos.bonos} de ${usuario_datos.anonimos.totales})`
+                                if (usuario_datos.identificados.length != 0) {
+                                    usuarios += "</br>"
                                 }
                             }
-                            else {
-                                usuario_datos.anonimos.totales++
-                                if (vt.bono == true) usuario_datos.anonimos.bonos++
-                            }
-                        })
-                        let usuarios = ``
-                        if (usuario_datos.anonimos.totales != 0) {
-                            usuarios += `*${VALOR_DEFECTO_NOMBRE_USUARIO} (bonos: ${usuario_datos.anonimos.bonos} de ${usuario_datos.anonimos.totales})`
-                            if (usuario_datos.identificados.length != 0) {
-                                usuarios += "</br>"
-                            }
-                        }
-                        usuario_datos.identificados.forEach(us => {
-                            usuarios += `${us}</br>`
-                        })
-                        html += `<tr>
+                            usuario_datos.identificados.forEach(us => {
+                                usuarios += `${us}</br>`
+                            })
+                            html += `<tr>
                             <td>${encuesta[0].opciones[datos_op.id]}</td>
                             <td>${usuarios}</td>
                             </tr>`
-                    })
-                    return html
-                }
+                        })
+                        return html
+                    }
 
 
-                $pagina_datos_analizados_encuesta.innerHTML = `<div class="head-pagina-datos"><div><h3>${encuesta[0].titulo}</h3></div><span id="bt-salir-pagina-datos">Salir</span></div>
+                    $pagina_datos_analizados_encuesta.innerHTML = `<div class="head-pagina-datos"><div><h3>${encuesta[0].titulo}</h3></div><span id="bt-salir-pagina-datos">Salir</span></div>
                     <table>
                     <caption><strong>Recuento de votos</strong></br>(más a menos votado)</caption>
                     ${mostrar_recuento_votos()}
@@ -403,33 +402,35 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                     ${mostrar_nombre_votantes()}
                     </table>`
 
-                //mostrar página flotante
-                const $alineador_pagina_datos_analizados_encuesta = document.querySelector("#alineador-pagina-datos-analizados-encuesta")
-                $alineador_pagina_datos_analizados_encuesta.classList.remove(CLASS_DISPLAY_NONE)
-                $alineador_pagina_datos_analizados_encuesta.classList.add(CLASS_DISPLAY_FLEX)
-                //eventos salir
-                document.querySelector("#bt-salir-pagina-datos").addEventListener("click", () => {
-                    $alineador_pagina_datos_analizados_encuesta.classList.remove(CLASS_DISPLAY_FLEX)
-                    $alineador_pagina_datos_analizados_encuesta.classList.add(CLASS_DISPLAY_NONE)
+                    //mostrar página flotante
+                    const $alineador_pagina_datos_analizados_encuesta = document.querySelector("#alineador-pagina-datos-analizados-encuesta")
+                    $alineador_pagina_datos_analizados_encuesta.classList.remove(CLASS_DISPLAY_NONE)
+                    $alineador_pagina_datos_analizados_encuesta.classList.add(CLASS_DISPLAY_FLEX)
+                    //eventos salir
+                    document.querySelector("#bt-salir-pagina-datos").addEventListener("click", () => {
+                        $alineador_pagina_datos_analizados_encuesta.classList.remove(CLASS_DISPLAY_FLEX)
+                        $alineador_pagina_datos_analizados_encuesta.classList.add(CLASS_DISPLAY_NONE)
+                    })
                 })
             })
         })
-    })
+    }
     //evento ver datos opcion
-    document.querySelectorAll(".text-contador-votos").forEach(contador => {
-        let timeEvent;
-        let timeEvent2;
-        contador.addEventListener("mouseenter", () => {
-            timeEvent = setTimeout(() => {
-                clearTimeout(timeEvent2)
-                if (document.querySelector(`#${$MINI_ANALISIS_DATOS}`)) {
-                    document.querySelectorAll(`.${$MINI_ANALISIS_DATOS}`).forEach(item => {
-                        item.remove()
-                    })
-                }
-                let id = contador.id.replace(PARTE_ID_CONTADOR_VOTANTES, "").split("-")//[id encuesta,opcion encuesta]
-                function mostrar_datos_resumen(contador, contador_bono, nombres_mostrar) {
-                    document.querySelector("#main").insertAdjacentHTML("afterend", `<div  id="${$MINI_ANALISIS_DATOS}"class="${$MINI_ANALISIS_DATOS} ${CLASS_APARECER_CHECKBOX_VOTO}">
+    if (!datos_anonimos) {
+        document.querySelectorAll(".text-contador-votos").forEach(contador => {
+            let timeEvent;
+            let timeEvent2;
+            contador.addEventListener("mouseenter", () => {
+                timeEvent = setTimeout(() => {
+                    clearTimeout(timeEvent2)
+                    if (document.querySelector(`#${$MINI_ANALISIS_DATOS}`)) {
+                        document.querySelectorAll(`.${$MINI_ANALISIS_DATOS}`).forEach(item => {
+                            item.remove()
+                        })
+                    }
+                    let id = contador.id.replace(PARTE_ID_CONTADOR_VOTANTES, "").split("-")//[id encuesta,opcion encuesta]
+                    function mostrar_datos_resumen(contador, contador_bono, nombres_mostrar) {
+                        document.querySelector("#main").insertAdjacentHTML("afterend", `<div  id="${$MINI_ANALISIS_DATOS}"class="${$MINI_ANALISIS_DATOS} ${CLASS_APARECER_CHECKBOX_VOTO}">
                         <table>
                         <tr>
                         <td>Votos</td>
@@ -443,70 +444,71 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                         </tr>
                         </table>
                             </div>`)
-                }
-                //mirar si ya hay datos creados
-                let datos_guardado = window.sessionStorage.getItem(NAME_DT_LOC_VOTACIONES) ? JSON.parse(window.sessionStorage.getItem(NAME_DT_LOC_VOTACIONES)) : []
-
-                //mirar si existe datos sobre mi encuesta-opcion
-                const datos_opcion_buscar = datos_guardado.find(x => x.id == id[0] && x.opcion == id[1])
-                if (datos_opcion_buscar) {//existen datos de guardado
-                    mostrar_datos_resumen(datos_opcion_buscar.datos.contador, datos_opcion_buscar.datos.contador_bono, datos_opcion_buscar.datos.nombres_mostrar)
-                }
-                else {//no existe: crear + actualizar
-                    const votaciones = JSON.parse(window.sessionStorage.getItem(NAME_DT_LOC_VOTACIONES)) //acceder a los datos de guardado de las votaciones
-                    let contador = 0
-                    let contador_bono = 0
-                    let nombres = {
-                        "anonimos": 0,
-                        "identificados": []
                     }
-                    votaciones.forEach(e => {
-                        if (e.id_encuesta == id[0] && e.opcion_votada_encuesta == id[1]) {
-                            if (e.bono_votante) contador_bono++
-                            contador++
-                            if (e.nombre_votante != VALOR_DEFECTO_NOMBRE_USUARIO) {
-                                nombres.identificados.push(e.nombre_votante)
+                    //mirar si ya hay datos creados
+                    let datos_guardado = window.sessionStorage.getItem(NAME_DT_LOC_VOTACIONES) ? JSON.parse(window.sessionStorage.getItem(NAME_DT_LOC_VOTACIONES)) : []
+
+                    //mirar si existe datos sobre mi encuesta-opcion
+                    const datos_opcion_buscar = datos_guardado.find(x => x.id == id[0] && x.opcion == id[1])
+                    if (datos_opcion_buscar) {//existen datos de guardado
+                        mostrar_datos_resumen(datos_opcion_buscar.datos.contador, datos_opcion_buscar.datos.contador_bono, datos_opcion_buscar.datos.nombres_mostrar)
+                    }
+                    else {//no existe: crear + actualizar
+                        const votaciones = JSON.parse(window.sessionStorage.getItem(NAME_DT_LOC_VOTACIONES)) //acceder a los datos de guardado de las votaciones
+                        let contador = 0
+                        let contador_bono = 0
+                        let nombres = {
+                            "anonimos": 0,
+                            "identificados": []
+                        }
+                        votaciones.forEach(e => {
+                            if (e.id_encuesta == id[0] && e.opcion_votada_encuesta == id[1]) {
+                                if (e.bono_votante) contador_bono++
+                                contador++
+                                if (e.nombre_votante != VALOR_DEFECTO_NOMBRE_USUARIO) {
+                                    nombres.identificados.push(e.nombre_votante)
+                                }
+                                else {
+                                    nombres.anonimos++
+                                }
+                            }
+
+                        })
+                        let nombres_mostrar = ""
+                        if (nombres.anonimos != 0) {
+                            nombres_mostrar = `${VALOR_DEFECTO_NOMBRE_USUARIO}: ${nombres.anonimos}`
+                        }
+                        let primero = true
+                        nombres.identificados.forEach(n => {
+                            if (primero && nombres.anonimos == 0) {
+                                nombres_mostrar += `${n}`
+                                primero = false
                             }
                             else {
-                                nombres.anonimos++
+                                nombres_mostrar += `</br>${n}`
                             }
-                        }
 
-                    })
-                    let nombres_mostrar = ""
-                    if (nombres.anonimos != 0) {
-                        nombres_mostrar = `${VALOR_DEFECTO_NOMBRE_USUARIO}: ${nombres.anonimos}`
+                        })
+                        //mostrar datos
+                        mostrar_datos_resumen(contador, contador_bono, nombres_mostrar)
                     }
-                    let primero = true
-                    nombres.identificados.forEach(n => {
-                        if (primero && nombres.anonimos == 0) {
-                            nombres_mostrar += `${n}`
-                            primero = false
-                        }
-                        else {
-                            nombres_mostrar += `</br>${n}`
-                        }
+                }, 1500)
 
+            })
+            contador.addEventListener("mouseleave", () => {
+                clearTimeout(timeEvent)
+                if (document.querySelector(`#${$MINI_ANALISIS_DATOS}`)) {
+                    document.querySelector(`#${$MINI_ANALISIS_DATOS}`).classList.remove(CLASS_APARECER_CHECKBOX_VOTO)
+                    document.querySelector(`#${$MINI_ANALISIS_DATOS}`).classList.add(CLASS_DESAPARECER_CHECKBOX_VOTO)
+                    document.querySelector(`#${$MINI_ANALISIS_DATOS}`).addEventListener("animationend", () => {
+                        if (getComputedStyle(document.querySelector(`#${$MINI_ANALISIS_DATOS}`)).opacity === "0") {
+                            document.querySelector(`#${$MINI_ANALISIS_DATOS}`).style.display = "none";
+                        }
                     })
-                    //mostrar datos
-                    mostrar_datos_resumen(contador, contador_bono, nombres_mostrar)
                 }
-            }, 1500)
-
+            })
         })
-        contador.addEventListener("mouseleave", () => {
-            clearTimeout(timeEvent)
-            if (document.querySelector(`#${$MINI_ANALISIS_DATOS}`)) {
-                document.querySelector(`#${$MINI_ANALISIS_DATOS}`).classList.remove(CLASS_APARECER_CHECKBOX_VOTO)
-                document.querySelector(`#${$MINI_ANALISIS_DATOS}`).classList.add(CLASS_DESAPARECER_CHECKBOX_VOTO)
-                document.querySelector(`#${$MINI_ANALISIS_DATOS}`).addEventListener("animationend", () => {
-                    if (getComputedStyle(document.querySelector(`#${$MINI_ANALISIS_DATOS}`)).opacity === "0") {
-                        document.querySelector(`#${$MINI_ANALISIS_DATOS}`).style.display = "none";
-                    }
-                })
-            }
-        })
-    })
+    }
 }
 
 //iniciador de codigo
