@@ -119,9 +119,53 @@ function contador_votos(votaciones) {
     return contador_votaciones
 }
 const Generar_configurador_encuesta = (id_encuesta) => {
-    let html = ``
+    conseguir_datos_SUPABASE({ "encuesta_id": id_encuesta, "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuesta => {
+        const principal = encuesta[0].principal ? "checked" : ""
+        const republicar = encuesta[0].republicar ? "checked" : ""
+        const votounico = encuesta[0].voto_unico ? "checked" : ""
+        const mostrarresultados = encuesta[0].mostrar_resultados_cerrada ? "checked" : ""
+        const datosanonimos = encuesta[0].datos_anonimos ? "checked" : ""
+        const votoanonimo = encuesta[0].voto_anonimo ? "checked" : ""
 
-    return html
+        document.querySelector("#cuerpo-cosas").innerHTML = `
+        <div>
+            <h3>Principales:</h3>
+            <label for="titulo">Título</label>
+            <input type="text" value="${encuesta[0].titulo}" name="titulo"placeholder="Sin Título">
+            <div>
+                <span>Opciones</span>
+                <textarea placeholder="opcion1, opcion2, ...">${encuesta[0].opciones}</textarea>
+            </div>
+            <label for="votounico">Voto único</label>
+            <input type="checkbox" name="votounico"${votounico}>
+        </div>
+        <div>
+            <h3>Configuraciones</h3>
+            <label for="principal">Principal</label>
+            <input type="checkbox" name="principal"${principal}>
+            <label for="fecha-inicio">Fecha inicio</label>
+            <input type="date" name="fecha-inicio"placeholder="dd/mm/yy" value="${encuesta[0].duracion_fechas[0]}">
+            <label for="fecha-fin">Fecha fin</label>
+            <input type="date" name="fecha-fin"placeholder="dd/mm/yy" value="${encuesta[0].duracion_fechas[1]}">
+            <label for="republicar">Republicar</label>
+            <input type="checkbox" name="republicar"${republicar}>
+            <label for="mostrarresultados">Mostrar resultados finales</label>
+            <input type="checkbox" name="mostrarresultados"${mostrarresultados}>
+        </div>
+        <div>
+        <h3>Privacidad</h3>
+        <label for="anonimo">Voto anónimo(no se guarda el nombre del votante)</label>
+        <input type="checkbox" name="anonimo"${votoanonimo}>
+        <label for="datos_anonimos">Resultados visibles solo para admin</label>
+        <input type="checkbox" name="datos_anonimos"${datosanonimos}>
+        </div>
+        <div class="opciones-encuesta-principales">
+        <button id="bt-cerrar-encuesta">Cerrar votacion</button>
+        <button id="bt-guardar-cambios-encuesta">Guardar cambios</button>
+        <button id="bt-cancelar-cambios-encuesta">Cancelar cambios</button>
+        </div>
+        `
+    })
 }
 const Generar_resultados_encuesta = (id_encuesta) => {
     //evento analizar datos
@@ -227,8 +271,10 @@ const Generar_cuerpo_configurador_votacion = (data, id_encuesta, opcion) => {
         </div>
     </section>
         <div class="div-juntar-todo-cuerpo-opciones">
+        <div class="opciones-administrador">
             <button id="configurar-bt" class="bt-opciones-admin-encuesta ${opcion1}">Configurar</button>
             <button id="resultados-bt" class="bt-opciones-admin-encuesta ${opcion2}">Resultados</button>
+            </div>
             <section id="cuerpo-cosas"class="cuerpo-opciones">
             </section>
         </div>`
