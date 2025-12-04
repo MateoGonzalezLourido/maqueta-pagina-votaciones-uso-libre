@@ -5,7 +5,6 @@ import './scripts/gestionar_encuestas.js'
 
 /*CODIGO */
 const URL_REPOSITORIO_ORIGINAL = "https://github.com/MateoGonzalezLourido/maqueta-pagina-votaciones-uso-libre"
-const URL_IMG_GESTION_ENCUESTAS=""
 
 document.querySelector('#app').innerHTML = `
 <div id="bt-abrir-menu-log-admin"><span>*ADMIN*</span></div>

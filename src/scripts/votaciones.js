@@ -183,9 +183,9 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
     const votacion_anonima = data.voto_anonimo
     let voto_unico = data.find(x => x.id_encuesta == encuesta_id)
     voto_unico = voto_unico.voto_unico ? TEXTO_VOTO_UNICO : TEXTO_VOTO_MULTIPLE
-    let caracteristicas_votacion=""
-    if(datos_anonimos)caracteristicas_votacion+="<span   class='tipo-voto'>*resultados privados</span>"
-    if(votacion_anonima)caracteristicas_votacion+="<span class='tipo-voto'>*voto anónimo</span>"
+    let caracteristicas_votacion = ""
+    if (datos_anonimos) caracteristicas_votacion += "<span   class='tipo-voto'>*resultados privados</span>"
+    if (votacion_anonima) caracteristicas_votacion += "<span class='tipo-voto'>*voto anónimo</span>"
     document.querySelector("#main").innerHTML = `
         <select id="${$id_select_encuestas}">
         ${generar_titulos_encuestas(data, encuesta_id)}
@@ -213,7 +213,9 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
             let contador_votaciones = contador_votos(votaciones, encuesta_escogida.id_encuesta)
             let opciones_votadas = mirar_opciones_votadas(votaciones, encuesta_escogida.id_encuesta)
             //crear datos guardado de las votaciones de la encuesta para reducir solicitudes a la base de datos
-            window.sessionStorage.setItem(NAME_DT_LOC_VOTACIONES, JSON.stringify(votaciones))
+            if (!datos_anonimos) {
+                window.sessionStorage.setItem(NAME_DT_LOC_VOTACIONES, JSON.stringify(votaciones))
+            }
             //actualizar pagina
             generar_encuestas(data, encuesta_escogida.id_encuesta, contador_votaciones, opciones_votadas)
         })
@@ -289,7 +291,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                             actualizar_contador(contador_votos.length, id_seleccionado[0], id_seleccionado[1])
                         })
                     }
-                    else if (!existe && (  !voto_unico ||  !unico_voto_realizado )){
+                    else if (!existe && (!voto_unico || !unico_voto_realizado)) {
                         let nombre_votante = "anónimo"
                         if (!votacion_anonima) {
                             nombre_votante = window.localStorage.getItem(NAME_DT_LOC_NOMBRE_VARIABLE) ? window.localStorage.getItem(NAME_DT_LOC_NOMBRE_VARIABLE) : "anónimo"
@@ -533,7 +535,10 @@ globalThis.addEventListener("DOMContentLoaded", () => {
             //crear/mostrar opciones de la encuesta para votar y sus votos
             let opciones_votadas = mirar_opciones_votadas(votaciones)
             //opciones
-            window.sessionStorage.setItem(NAME_DT_LOC_VOTACIONES, JSON.stringify(votaciones))
+            const datos_anonimos = data.filter(x => x.id_encuesta == encuesta_id)[0].voto_anonimo
+            if (!datos_anonimos) {
+                window.sessionStorage.setItem(NAME_DT_LOC_VOTACIONES, JSON.stringify(votaciones))
+            }
             generar_encuestas(data, encuesta_id, contador_votaciones, opciones_votadas)
         })
     })
