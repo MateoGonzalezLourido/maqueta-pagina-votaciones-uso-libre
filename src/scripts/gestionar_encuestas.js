@@ -128,41 +128,65 @@ const Generar_configurador_encuesta = (id_encuesta) => {
         const votoanonimo = encuesta[0].voto_anonimo ? "checked" : ""
 
         document.querySelector("#cuerpo-cosas").innerHTML = `
-        <div>
-            <h3>Principales:</h3>
-            <label for="titulo">Título</label>
-            <input type="text" value="${encuesta[0].titulo}" name="titulo"placeholder="Sin Título">
+        <div class="apartado">
+            <h3>>Principales</h3>
             <div>
+                <label for="input-titulo">Título</label>
+                <input type="text" id="input-titulo" value="${encuesta[0].titulo}" placeholder="Sin Título">
+            </div>
+            <div class="apartado-opciones">
                 <span>Opciones</span>
                 <textarea placeholder="opcion1, opcion2, ...">${encuesta[0].opciones}</textarea>
             </div>
-            <label for="votounico">Voto único</label>
-            <input type="checkbox" name="votounico"${votounico}>
+            <div>
+            <label for="input-votounico">Voto único
+                <input type="checkbox"id="input-votounico"${votounico}>
+            </label>
+            </div>
         </div>
-        <div>
-            <h3>Configuraciones</h3>
-            <label for="principal">Principal</label>
-            <input type="checkbox" name="principal"${principal}>
-            <label for="fecha-inicio">Fecha inicio</label>
-            <input type="date" name="fecha-inicio"placeholder="dd/mm/yy" value="${encuesta[0].duracion_fechas[0]}">
-            <label for="fecha-fin">Fecha fin</label>
-            <input type="date" name="fecha-fin"placeholder="dd/mm/yy" value="${encuesta[0].duracion_fechas[1]}">
-            <label for="republicar">Republicar</label>
-            <input type="checkbox" name="republicar"${republicar}>
-            <label for="mostrarresultados">Mostrar resultados finales</label>
-            <input type="checkbox" name="mostrarresultados"${mostrarresultados}>
+        <div class="apartado">
+            <h3>>Configuraciones</h3>
+            <div>
+            <label for="input-principal">*Principal      
+                <input type="checkbox" id="input-principal" ${principal}>
+            </label>
+            </div>
+            <div>
+                <label for="input-fecha-inicio">*Fecha inicio</label>
+                <input type="datetime-local" id="input-fecha-inicio"placeholder="dd/mm/yy" value="${encuesta[0].duracion_fechas[0]}">
+            </div>
+            <div>
+                <label for="input-fecha-fin">*Fecha fin</label>
+                <input type="datetime-local" id="input-fecha-fin"placeholder="dd/mm/yy" value="${encuesta[0].duracion_fechas[1]}">
+            </div>
+            <div>
+                <label for="input-republicar">*Republicar
+                    <input type="checkbox" id="input-republicar"${republicar}>
+                </label>
+            </div>
+            <div>
+                <label for="input-mostrarresultados">*Mostrar resultados finales
+                    <input type="checkbox" id="input-mostrarresultados"${mostrarresultados}>
+                </label>
+            </div>
         </div>
-        <div>
-        <h3>Privacidad</h3>
-        <label for="anonimo">Voto anónimo(no se guarda el nombre del votante)</label>
-        <input type="checkbox" name="anonimo"${votoanonimo}>
-        <label for="datos_anonimos">Resultados visibles solo para admin</label>
-        <input type="checkbox" name="datos_anonimos"${datosanonimos}>
+        <div class="apartado">
+            <h3>>Privacidad</h3>
+            <div>
+                <label for="input-anonimo">Voto anónimo(no se guarda el nombre del votante)
+                    <input type="checkbox" id="input-anonimo"${votoanonimo}>
+                </label>
+            </div>
+            <div>
+                <label for="input-datos_anonimos">Resultados visibles solo para admin
+                    <input type="checkbox" id="input-datos_anonimos"${datosanonimos}>
+                </label>
+            </div>
         </div>
         <div class="opciones-encuesta-principales">
-        <button id="bt-cerrar-encuesta">Cerrar votacion</button>
-        <button id="bt-guardar-cambios-encuesta">Guardar cambios</button>
-        <button id="bt-cancelar-cambios-encuesta">Cancelar cambios</button>
+            <button id="bt-cerrar-encuesta">Cerrar votacion</button>
+            <button id="bt-guardar-cambios-encuesta">Guardar cambios</button>
+            <button id="bt-cancelar-cambios-encuesta">Cancelar cambios</button>
         </div>
         `
     })

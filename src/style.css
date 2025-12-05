@@ -617,3 +617,80 @@ main {
   color: rgba(245, 245, 245, 0.86);
   animation: quitar_fondo 0.5s ease-in;
 }
+
+#cuerpo-cosas {
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-top: 10px;
+}
+
+#cuerpo-cosas input,
+textarea {
+  outline: none;
+  font-size: 13.8px;
+  resize: none;
+}
+
+#cuerpo-cosas h3 {
+  margin: 0;
+  cursor: default;
+  margin-bottom: 5px;
+}
+
+#cuerpo-cosas input[type="text"] {
+  height: 25px;
+  width: calc(100% - 16px);
+  padding-left: 8px;
+  padding-right: 8px;
+
+}
+.apartado-opciones {
+  margin-top: 8px;
+  margin-bottom: 2px;
+  display: flex;
+  flex-direction: column;
+}
+
+.apartado-opciones span {
+  flex: 1;
+}
+
+.apartado-opciones textarea {
+  padding: 8px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  height: 60px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+#cuerpo-cosas label {
+  margin-top: 8px;
+  cursor: pointer;
+}
+
+#cuerpo-cosas .apartado  {
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+#cuerpo-cosas .apartado div {
+  display: flex;
+  flex-direction: column;
+}
+
+
+.opciones-encuesta-principales {
+  margin-top: 22px;
+  margin-bottom: 17px;
+  display: flex;
+  width: 100%;
+  justify-content: space-around;
+}
+
+.opciones-encuesta-principales button {
+  cursor: pointer;
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-bottom: 3px;
+  padding-top: 2px;
+}
