@@ -355,7 +355,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                     }
                     const mostrar_nombre_votantes = () => {
                         let html = ``
-                        html += `<tr><td>Opción</td><td>Votantes</td></tr>`
+                        html += `<table><caption><strong>Votantes</strong> (más a menos votado)</caption><tr><td>Opción</td><td>Votantes</td></tr>`
                         let opciones_ordenadas_mayor = contador_votaciones.sort((x, y) => y.votantes.length - x.votantes.length)
                         opciones_ordenadas_mayor.forEach(datos_op => {
                             let usuario_datos = {
@@ -390,23 +390,21 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                                 usuarios += `${us}</br>`
                             })
                             html += `<tr>
-                            <td>${encuesta[0].opciones[datos_op.id]}</td>
-                            <td>${usuarios}</td>
-                            </tr>`
+                                        <td>${encuesta[0].opciones[datos_op.id]}</td>
+                                        <td>${usuarios}</td>
+                                        </tr>`
                         })
+                        html += "</table>"
                         return html
                     }
-
 
                     $pagina_datos_analizados_encuesta.innerHTML = `<div class="head-pagina-datos"><div><h3>${encuesta[0].titulo}</h3></div><span id="bt-salir-pagina-datos">Salir</span></div>
                     <table>
                     <caption><strong>Recuento de votos</strong></br>(más a menos votado)</caption>
                     ${mostrar_recuento_votos()}
                     </table>
-                    <table>
-                    <caption><strong>Votantes</strong> (más a menos votado)</caption>
-                    ${mostrar_nombre_votantes()}
-                    </table>`
+                    ${!data.voto_anonimo ? mostrar_nombre_votantes() : ""}
+                    `
 
                     //mostrar página flotante
                     const $alineador_pagina_datos_analizados_encuesta = document.querySelector("#alineador-pagina-datos-analizados-encuesta")
@@ -457,7 +455,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                     //mirar si existe datos sobre mi encuesta-opcion
                     const datos_opcion_buscar = datos_guardado.find(x => x.id == id[0] && x.opcion == id[1])
                     if (datos_opcion_buscar) {//existen datos de guardado
-                        mostrar_datos_resumen(datos_opcion_buscar.datos.contador, datos_opcion_buscar.datos.contador_bono, datos_opcion_buscar.datos.nombres_mostrar)
+                        mostrar_datos_resumen(datos_opcion_buscar.datos.contador, datos_opcion_buscar.datos.contador_bono, datos_opcion_buscar.datos.nombres_mostrar, datos_opcion_buscar.voto_anonimo)
                     }
                     else {//no existe: crear + actualizar
                         const votaciones = JSON.parse(window.sessionStorage.getItem(NAME_DT_LOC_VOTACIONES)) //acceder a los datos de guardado de las votaciones
@@ -480,6 +478,7 @@ function generar_encuestas(data, encuesta_id, contador_votaciones, opciones_vota
                             }
 
                         })
+                        //voto anonimo
                         let nombres_mostrar = ""
                         if (nombres.anonimos != 0) {
                             nombres_mostrar = `${VALOR_DEFECTO_NOMBRE_USUARIO}: ${nombres.anonimos}`

@@ -13,7 +13,7 @@ const MENSAJE_ACCESO_CORRECTO = "*Acceso <ROLE> ADMIN correcto"
 const URL_IMG_AÑADIR_ENCUESTA = ""
 const $id_select_encuestas = "select-encuestas"
 const $alineador_pagina_datos_analizados_encuesta = "alineador-pagina-datos-analizados-encuesta"
-const $pagina_datos_analizados_encuesta = "pagina-datos-analizados-encuesta"
+const $pagina_datos_analizados_encuesta = "admin-pagina-datos-analizados-encuesta"
 //Valores por defecto 
 const VALOR_DEFECTO_NOMBRE_USUARIO = "anónimo"
 //supabse datos
@@ -173,7 +173,7 @@ const Generar_configurador_encuesta = (id_encuesta) => {
         <div class="apartado">
             <h3>>Privacidad</h3>
             <div>
-                <label for="input-anonimo">Voto anónimo(no se guarda el nombre del votante)
+                <label for="input-anonimo">Voto anónimo</br>(no se guarda el nombre del votante)
                     <input type="checkbox" id="input-anonimo"${votoanonimo}>
                 </label>
             </div>
@@ -216,7 +216,7 @@ const Generar_resultados_encuesta = (id_encuesta) => {
         }
         const mostrar_nombre_votantes = () => {
             let html = ``
-            html += `<tr><td>Opción</td><td>Votantes</td></tr>`
+            html += `<table><caption><strong>Votantes</strong> (más a menos votado)</caption><tr><td>Opción</td><td>Votantes</td></tr>`
             let opciones_ordenadas_mayor = contador_votaciones.sort((x, y) => y.votantes.length - x.votantes.length)
             opciones_ordenadas_mayor.forEach(datos_op => {
                 let usuario_datos = {
@@ -255,6 +255,7 @@ const Generar_resultados_encuesta = (id_encuesta) => {
                             <td>${usuarios}</td>
                             </tr>`
             })
+            html += "</table>"
             return html
         }
         return (`<div class="head-pagina-datos"><h3>${encuesta[0].titulo}</h3></div>
@@ -262,15 +263,13 @@ const Generar_resultados_encuesta = (id_encuesta) => {
                     <caption><strong>Recuento de votos</strong></br>(más a menos votado)</caption>
                     ${mostrar_recuento_votos()}
                     </table>
-                    <table>
-                    <caption><strong>Votantes</strong> (más a menos votado)</caption>
-                    ${mostrar_nombre_votantes()}
-                    </table>`)
+                    ${!encuesta[0].voto_anonimo ? mostrar_nombre_votantes() : ""}
+                    `)
     }
     conseguir_datos_SUPABASE({ "encuesta_id": id_encuesta, "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuesta => {
         conseguir_datos_SUPABASE({ "encuesta_id": id_encuesta, "tabla": NOMBRE_TABLA_VOTACIONES }).then((votaciones) => {
             document.querySelector("#cuerpo-cosas").innerHTML = `
-                <div id="${$pagina_datos_analizados_encuesta}" style="width:calc(100% - 28px) !important">
+                <div id="${$pagina_datos_analizados_encuesta}">
                 ${Datos_completar(encuesta, votaciones)}
                 </div>`
         })
@@ -281,8 +280,13 @@ const Generar_cuerpo_configurador_votacion = (data, id_encuesta, opcion) => {
     const opcion1 = opcion == 1 ? "usando" : "no-usando"
     const opcion2 = opcion == 2 ? "usando" : "no-usando"
     function Generar_cuerpo(opcion) {
-        if (opcion == 1) Generar_configurador_encuesta(id_encuesta)
-        else if (opcion == 2) Generar_resultados_encuesta(id_encuesta)
+        if (opcion == 1) {
+            Generar_configurador_encuesta(id_encuesta)
+        }
+        else if (opcion == 2) {
+            document.querySelector("#cuerpo-cosas").style.padding = "0px ";
+            Generar_resultados_encuesta(id_encuesta)
+        }
     }
 
     document.querySelector("#main").innerHTML = `
@@ -299,7 +303,7 @@ const Generar_cuerpo_configurador_votacion = (data, id_encuesta, opcion) => {
             <button id="configurar-bt" class="bt-opciones-admin-encuesta ${opcion1}">Configurar</button>
             <button id="resultados-bt" class="bt-opciones-admin-encuesta ${opcion2}">Resultados</button>
             </div>
-            <section id="cuerpo-cosas"class="cuerpo-opciones">
+            <section id="cuerpo-cosas"class="cuerpo-ajustes">
             </section>
         </div>`
     //completar cuerpo
