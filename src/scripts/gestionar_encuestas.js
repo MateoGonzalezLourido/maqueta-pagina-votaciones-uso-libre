@@ -63,6 +63,16 @@ const añadir_votacion_encuesta = async ({ id_nombre, id_encuesta, opcion_votada
         console.error("Error al añadir voto:", error);
     }
 }
+const actualizar__encuesta = async (id_encuesta, datos_cambiar) => {
+    const { error } = await supabase
+        .from(NOMBRE_TABLA_ENCUESTAS)
+        .update(datos_cambiar)
+        .eq("id_encuesta", id_encuesta);
+
+    if (error) {
+        console.error("Error al cambiar datos de la encuesta:", error)
+    }
+}
 // TODO: algo pendiente
 function verificar_acceso_admin(entrada) {//132546781535
     if (entrada = 1) {
@@ -71,24 +81,6 @@ function verificar_acceso_admin(entrada) {//132546781535
     return false
 }
 
-function generar_select_encuestas() {
-
-}
-function generar_opciones_encuesta() {
-
-}
-function actualizar_pagina(encuesta_id) {
-    document.querySelector("#app").innerHTML = `
-    <div><span id="${ID_BT_VOLVER_HOME}"><-HOME-></span></div>
-            <main>
-            <section><select>${generar_select_encuestas(encuesta_id)}</select><div id="${ID_BT_AÑADIR_ENCUESTA}"><img class="img-añadir-encuesta" src="${URL_IMG_AÑADIR_ENCUESTA}" alt=""></div></section>
-            <section>
-            ${generar_opciones_encuesta()}
-            </section>
-            <section><button>Guardar Cambios</button></section>            
-            </main>
-        `
-}
 const generar_titulos_encuestas = (data, encuesta_id) => {
     let html = ``
     data.forEach(encuesta => {
@@ -118,8 +110,91 @@ function contador_votos(votaciones) {
     })
     return contador_votaciones
 }
+function sanitizar_datos(datos) {
+    let texto_recibido = datos
+    texto_recibido = texto_recibido.replace(/\n+/g, "").replace(/\s+/g, " ").replace(/[<>#;!$%_]/g, "")
+
+    return datos
+}
+function recoger_datos() {
+    const datos_recogidos = {}
+    //recoger datos
+    datos_recogidos.titulo = sanitizar_datos(document.querySelector("#input-titulo").value)
+    //datos opciones
+    datos_recogidos.opciones = []
+    const opciones = (document.querySelector("#input-opciones").value).split(",")
+    opciones.forEach(e => {
+        datos_recogidos.opciones.push(sanitizar_datos(e))
+    })
+    datos_recogidos.voto_unico = document.querySelector("#input-votounico").checked
+    datos_recogidos.principal = document.querySelector("#input-principal").checked
+    //fecha inicio fin
+    datos_recogidos.duracion_fechas = ["", ""]
+    datos_recogidos.duracion_fechas[0] = document.querySelector("#input-fecha-inicio").value
+    datos_recogidos.duracion_fechas[1] = document.querySelector("#input-fecha-fin").value
+
+    datos_recogidos.republicar = document.querySelector("#input-republicar").checked
+    datos_recogidos.mostrar_resultados_cerrada = document.querySelector("#input-mostrarresultados").checked
+    datos_recogidos.voto_anonimo = document.querySelector("#input-anonimo").checked
+    datos_recogidos.datos_anonimos = document.querySelector("#input-datos_anonimos").checked
+
+    return datos_recogidos
+}
+function comprobar_actualizar_datos(id_encuesta,datos_guardados) {
+    let nuevos_datos_guardado = datos_guardados
+    const datos = recoger_datos()
+    const datos_cambiar = {}
+    //meter datos para comparar
+    if (datos_guardados.titulo != datos.titulo) {
+        datos_cambiar.titulo = datos.titulo
+        nuevos_datos_guardado.titulo = datos.titulo
+    }
+    if (datos_guardados.opciones.toString() != datos.opciones.toString()) {
+        datos_cambiar.opciones = datos.opciones
+        nuevos_datos_guardado.opciones = datos.opciones
+    }
+    if (datos_guardados.principal != datos.principal) {
+        datos_cambiar.principal = datos.principal
+        nuevos_datos_guardado.principal = datos.principal
+    }
+    //fechas inicio fin
+    /*const fechas = [datos.duracion_fechas[0], datos.duracion_fechas[1]]
+    if (encuesta[0].duracion_fechas != datos.duracion_fechas){
+        datos_cambiar.duracion_fechas = fechas
+        nuevos_datos_guardado.duracion_fechas = datos.duracion_fechas
+    }*/
+
+    if (datos_guardados.republicar != datos.republicar) {
+        datos_cambiar.republicar = datos.republicar
+        nuevos_datos_guardado.republicar = datos.republicar
+    }
+    if (datos_guardados.voto_unico != datos.voto_unico) {
+        datos_cambiar.voto_unico = datos.voto_unico
+        nuevos_datos_guardado.voto_unico = datos.voto_unico
+    }
+    if (datos_guardados.mostrar_resultados_cerrada != datos.mostrar_resultados_cerrada) {
+        datos_cambiar.mostrar_resultados_cerrada = datos.mostrar_resultados_cerrada
+        nuevos_datos_guardado.mostrar_resultados_cerrada = datos.mostrar_resultados_cerrada
+    }
+    if (datos_guardados.datos_anonimos != datos.datos_anonimos) {
+        datos_cambiar.datos_anonimos = datos.datos_anonimos
+        nuevos_datos_guardado.datos_anonimos = datos.datos_anonimos
+    }
+    if (datos_guardados.voto_anonimo != datos.voto_anonimo) {
+        datos_cambiar.voto_anonimo = datos.voto_anonimo
+        nuevos_datos_guardado.voto_anonimo = datos.voto_anonimo
+    }
+    //actualizar base de datos(si hay algun cambio)
+    //actualizar local
+    if (Object.keys(datos_cambiar).length > 0) {
+        window.sessionStorage.setItem("Ajustes_encuesta", JSON.stringify(nuevos_datos_guardado))
+        actualizar__encuesta(id_encuesta, datos_cambiar)
+    }
+}
 const Generar_configurador_encuesta = (id_encuesta) => {
     conseguir_datos_SUPABASE({ "encuesta_id": id_encuesta, "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuesta => {
+        //guardar datos en local
+        window.sessionStorage.setItem("Ajustes_encuesta", JSON.stringify(encuesta[0]))
         const principal = encuesta[0].principal ? "checked" : ""
         const republicar = encuesta[0].republicar ? "checked" : ""
         const votounico = encuesta[0].voto_unico ? "checked" : ""
@@ -136,7 +211,7 @@ const Generar_configurador_encuesta = (id_encuesta) => {
             </div>
             <div class="apartado-opciones">
                 <span>Opciones</span>
-                <textarea placeholder="opcion1, opcion2, ...">${encuesta[0].opciones}</textarea>
+                <textarea id="input-opciones" placeholder="opcion1, opcion2, ...">${encuesta[0].opciones}</textarea>
             </div>
             <div>
             <label for="input-votounico">Voto único
@@ -189,6 +264,57 @@ const Generar_configurador_encuesta = (id_encuesta) => {
             <button id="bt-cancelar-cambios-encuesta">Cancelar cambios</button>
         </div>
         `
+        //reiniciar cambios
+        if (document.querySelector("#bt-cancelar-cambios-encuesta")) {
+            document.querySelector("#bt-cancelar-cambios-encuesta").addEventListener("click", (e) => {
+                e.stopPropagation()
+                menu_confirmacion().then(res => {
+                    const menu = document.querySelector("#bloqueo-interacciones-menu-contexto");
+                    if (menu) menu.remove()
+                    if (res) {
+                        reiniciar_ajustes_anteriores(id_encuesta)
+                    }
+                })
+
+            })
+        }
+        //guardar cambios
+        if (document.querySelector("#bt-guardar-cambios-encuesta")) {
+            document.querySelector("#bt-guardar-cambios-encuesta").addEventListener("click", (e) => {
+                e.stopPropagation()
+                menu_confirmacion().then(res => {
+                    const menu = document.querySelector("#bloqueo-interacciones-menu-contexto");
+                    if (menu) menu.remove()
+                    if (res) {//pedir los datos
+                        let datos_guardados = JSON.parse(window.sessionStorage.getItem("Ajustes_encuesta"))
+                        if (datos_guardados != null && datos_guardados.id_encuesta != id_encuesta) {
+                            conseguir_datos_SUPABASE({ "encuesta_id": id_encuesta, "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuesta => {
+                                comprobar_actualizar_datos(encuesta)
+
+                            })
+                        }
+                        else {//usar datos ya existentes
+                            comprobar_actualizar_datos(id_encuesta,datos_guardados)
+                        }
+                    }
+                })
+
+            })
+        }
+        //cerrar votacion
+        if (document.querySelector("#bt-cerrar-encuesta")) {
+            document.querySelector("#bt-cerrar-encuesta").addEventListener("click", (e) => {
+                e.stopPropagation()
+                menu_confirmacion().then(res => {
+                    const menu = document.querySelector("#bloqueo-interacciones-menu-contexto");
+                    if (menu) menu.remove()
+                    if (res) {
+                        actualizar__encuesta(id_encuesta, { "terminada": true })
+                    }
+                })
+
+            })
+        }
     })
 }
 const Generar_resultados_encuesta = (id_encuesta) => {
@@ -275,6 +401,63 @@ const Generar_resultados_encuesta = (id_encuesta) => {
         })
     })
 }
+
+const menu_confirmacion = () => {
+    return new Promise((resolve) => {
+        // si ya existe, eliminar
+        const menu = document.querySelector("#bloqueo-interacciones-menu-contexto");
+        if (menu) menu.remove()
+
+        // crear menú
+        document.querySelector("#main").insertAdjacentHTML("afterend", `
+            <div id="bloqueo-interacciones-menu-contexto">
+            <div id="menu-contexto">
+                <span>*Confirmar acción*</span>
+                <div>
+                <button id="cancelar-accion-bt">cancelar</button>
+                <button id="confirmar-accion-bt">confirmar</button>
+                </div>
+            </div>
+            </div>
+        `)
+
+
+        // función cerrar y resolver
+        const Cerrar_menu_confirmacion = (valor) => {
+            if (!menu) resolve(valor)
+            else {
+                menu.remove()
+                resolve(valor) // resuelve la promesa con true o false
+            }
+        }
+
+        // confirmar
+        document.querySelector("#confirmar-accion-bt").addEventListener("click", (e) => {
+            e.stopPropagation();
+            Cerrar_menu_confirmacion(true);
+        })
+
+        // cancelar
+        document.querySelector("#cancelar-accion-bt").addEventListener("click", (e) => {
+            e.stopPropagation();
+            Cerrar_menu_confirmacion(false);
+        });
+    });
+}
+function reiniciar_ajustes_anteriores(id_encuesta) {
+    conseguir_datos_SUPABASE({ "encuesta_id": id_encuesta, "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuesta => {
+        document.querySelector("#input-titulo").value = encuesta[0].titulo
+        document.querySelector("#input-opciones").value = encuesta[0].opciones
+        document.querySelector("#input-votounico").checked = encuesta[0].voto_unico
+        document.querySelector("#input-principal").checked = encuesta[0].principal
+        document.querySelector("#input-fecha-inicio").value = encuesta[0].duracion_fechas[0]
+        document.querySelector("#input-fecha-fin").value = encuesta[0].duracion_fechas[1]
+        document.querySelector("#input-republicar").checked = encuesta[0].republicar
+        document.querySelector("#input-mostrarresultados").checked = encuesta[0].mostrar_resultados_cerrada
+        document.querySelector("#input-anonimo").checked = encuesta[0].voto_anonimo
+        document.querySelector("#input-datos_anonimos").checked = encuesta[0].datos_anonimos
+    })
+}
 //generador principal
 const Generar_cuerpo_configurador_votacion = (data, id_encuesta, opcion) => {
     const opcion1 = opcion == 1 ? "usando" : "no-usando"
@@ -324,6 +507,10 @@ const Generar_cuerpo_configurador_votacion = (data, id_encuesta, opcion) => {
         const titulo_escogido = e.target.value
         const encuesta_escogida = data.find(x => x.titulo == titulo_escogido)
         Generar_cuerpo_configurador_votacion(data, encuesta_escogida, 1)
+    })
+    //salir pagina principal
+    document.querySelector("#bt-volver-home").addEventListener("click", () => {
+        location.reload()
     })
 }
 //animacion

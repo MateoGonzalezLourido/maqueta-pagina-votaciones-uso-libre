@@ -65,7 +65,7 @@ function flip_flop_menu() {
 
 function actualizar_nombre() {
     const valor_repuesto = !window.localStorage.getItem(NAME_DT_LOC_NOMBRE_VARIABLE) ? VALOR_DEFECTO_NOMBRE_USUARIO : window.localStorage.getItem(NAME_DT_LOC_NOMBRE_VARIABLE)
-    let valor = $nombre_usuario.value.replace(/\n+/g, "").replace(/\s+/g, " ").replace(/[0-9|.<>,#;]/g, "").replaceAll("no bono", "").replaceAll("(bono)", "").replaceAll("bono", "")
+    let valor = $nombre_usuario.value.replace(/\n+/g, "").replace(/\s+/g, " ").replace(/[0-9|.<>!$%,#;]/g, "").replaceAll("no bono", "").replaceAll("(bono)", "").replaceAll("bono", "")
     if (valor.length < 1) {
         valor = valor_repuesto
     }
