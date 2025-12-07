@@ -10,7 +10,7 @@ const ID_INPUT_KEY_ADMIN = "input-password-admin"
 const CLASS_MOSTRAR_MENU = "mostrar-menu-log"
 const CLASS_QUITAR_MENU = "quitar-menu-log"
 const MENSAJE_ACCESO_CORRECTO = "*Acceso <ROLE> ADMIN correcto"
-const URL_IMG_AÑADIR_ENCUESTA = ""
+const URL_IMG_AÑADIR_ENCUESTA = "/añadir.png"
 const $id_select_encuestas = "select-encuestas"
 const $pagina_datos_analizados_encuesta = "admin-pagina-datos-analizados-encuesta"
 //Valores por defecto 
@@ -20,7 +20,7 @@ const NOMBRE_TABLA_ENCUESTAS = "encuestas"
 const NOMBRE_TABLA_VOTACIONES = "encuestas_votaciones"
 const NOMBRE_TABLA_DEFECTO_USAR = NOMBRE_TABLA_ENCUESTAS
 //textos
-const TEXTO_ENCUESTA_ACABADA_SELECT=" (cerrada)"
+const TEXTO_ENCUESTA_ACABADA_SELECT = " (cerrada)"
 //funciones de SUPABASE
 const conseguir_datos_SUPABASE = async ({ encuesta_id = null, tabla = NOMBRE_TABLA_DEFECTO_USAR }) => {
     let query = supabase.from(tabla).select("*");
@@ -47,19 +47,23 @@ const borrar_votacion_encuesta = async (id_nombre, id_encuesta, opcion_votada_en
         console.error("Error al borrar el voto:", error)
     }
 }
-const añadir_votacion_encuesta = async ({ id_nombre, id_encuesta, opcion_votada_encuesta, nombre_votante, bono_votante }) => {
-    const { error } = await supabase
-        .from(NOMBRE_TABLA_VOTACIONES)
+const añadir_encuesta = async ({ titulo = "Votacion", opciones = [], principal = false, duracion_fechas = [], republicar = false, voto_unico = false, terminada = false, mostrar_resultados_cerrada = true, datos_anonimos = false, voto_anonimo = false }) => {
+    const { data, error } = await supabase
+        .from(NOMBRE_TABLA_ENCUESTAS)
         .insert([
             {
-                "id_nombre": id_nombre,
-                "id_encuesta": id_encuesta,
-                "opcion_votada_encuesta": opcion_votada_encuesta,
-                "nombre_votante": nombre_votante,
-                "bono_votante": bono_votante
+                "titulo": titulo,
+                "opciones": opciones,
+                "principal": principal,
+                "duracion_fechas": duracion_fechas,
+                "republicar": republicar,
+                "voto_unico": voto_unico,
+                "terminada": terminada,
+                "mostrar_resultados_cerrada": mostrar_resultados_cerrada,
+                "datos_anonimos": datos_anonimos,
+                "voto_anonimo": voto_anonimo
             }
         ]);
-
     if (error) {
         console.error("Error al añadir voto:", error);
     }
@@ -329,7 +333,7 @@ const Generar_configurador_encuesta = (id_encuesta) => {
                         const menu = document.querySelector("#bloqueo-interacciones-menu-contexto");
                         if (menu) menu.remove()
                         if (res) {
-                            actualizar__encuesta(id_encuesta, { "terminada": true }).then(()=>{
+                            actualizar__encuesta(id_encuesta, { "terminada": true }).then(() => {
                                 Generar_configurador_encuesta(id_encuesta)
                             })
                         }
@@ -496,12 +500,12 @@ const Generar_cuerpo_configurador_votacion = (data, id_encuesta, opcion) => {
     }
 
     document.querySelector("#main").innerHTML = `
-    <section>
+    <section class="inicio-admin">
         <select id="${$id_select_encuestas}">
             ${generar_titulos_encuestas(data, id_encuesta)}
         </select>
         <div id="${ID_BT_AÑADIR_ENCUESTA}">
-            <img class="img-añadir-encuesta" src="${URL_IMG_AÑADIR_ENCUESTA}" alt="">
+            <img draggable="false" class="img-añadir-encuesta" src="${URL_IMG_AÑADIR_ENCUESTA}" alt="crear">
         </div>
     </section>
         <div class="div-juntar-todo-cuerpo-opciones">
@@ -534,6 +538,60 @@ const Generar_cuerpo_configurador_votacion = (data, id_encuesta, opcion) => {
     //salir pagina principal
     document.querySelector("#bt-volver-home").addEventListener("click", () => {
         location.reload()
+    })
+    //crear votacion
+    document.querySelector(`#${ID_BT_AÑADIR_ENCUESTA}`).addEventListener("click", () => {
+        document.querySelector("#main").insertAdjacentHTML("afterend", `
+            <div id="bloqueador-acciones-crear-votacion">
+                <div class="menu-crear-votacion">
+                    <div>
+                        <label for="input-titulo-crear-votacion">Título</label>
+                        <input id="input-titulo-crear-votacion" type="text" value=""placeholder="Ej: Fecha del partido">
+                    </div>
+                    <div>
+                        <label for="input-opciones-crear-votacion">Opciones</label>
+                        <textarea id="input-opciones-crear-votacion" ></textarea>
+                    </div>
+                    <div>
+                        <label for="input-voto-unico-crear-votacion">Voto único
+                        <input id="input-voto-unico-crear-votacion" type="checkbox">
+                        </label>
+                    </div>
+                    <div id="text-datos-incompletos"style="display:none">*Rellena el titulo y opciones de la votación</div>
+                    <div class="opciones-crear-votacion-menu">
+                    <button id="bt-cancelar-crear-votacion">Cancelar</button>
+                    <button id="bt-confirmar-crear-votacion">Crear</button>
+                    </div>
+                </div>
+                </div>
+            `)
+        //evento cancelar creacion votacion
+        document.querySelector("#bt-cancelar-crear-votacion").addEventListener("click", () => {
+            document.querySelector("#bloqueador-acciones-crear-votacion").remove()
+        })
+        //evento crear votacion
+        document.querySelector("#bt-confirmar-crear-votacion").addEventListener("click", () => {
+            //validar datos
+            const titulo_votacion = sanitizar_datos(document.querySelector("#input-titulo-crear-votacion").value)
+            let opciones = (document.querySelector("#input-opciones-crear-votacion").value).split(",")
+            for (let i = 0; i < opciones.length; i++) {
+                opciones[i] = sanitizar_datos(opciones[i])
+            }
+            const voto_unico_votacion = document.querySelector("#input-voto-unico-crear-votacion").checked
+            if (titulo_votacion.length > 0 && opciones.length > 0 && (voto_unico_votacion == false || voto_unico_votacion == true)) {
+                //crear votacionw
+                console.log({ "titulo": titulo_votacion, "opciones": opciones, "voto_unico": voto_unico_votacion })
+                añadir_encuesta({ "titulo": titulo_votacion, "opciones": opciones, "voto_unico": voto_unico_votacion }).then(() => {
+                    conseguir_datos_SUPABASE({ "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuestas => {
+                        document.querySelector("#select-encuestas").innerHTML = generar_titulos_encuestas(encuestas, id_encuesta)
+                    })
+
+                })
+            }
+            else {//los campos estan incompletos
+                document.querySelector("#text-datos-incompletos").style.display = "block"
+            }
+        })
     })
 }
 //animacion

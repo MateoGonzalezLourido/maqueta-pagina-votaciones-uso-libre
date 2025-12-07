@@ -841,3 +841,99 @@ textarea {
 #bt-abrir-encuesta:hover {
   background-color: rgba(95, 94, 151, 0.603);
 }
+
+.inicio-admin {
+  display: flex;
+  align-items: center;
+}
+
+.inicio-admin .img-añadir-encuesta {
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 35px;
+  height: 35px;
+  margin-left: 5px;
+  border-radius: 100%;
+  transition: 0.3s;
+  user-select: none;
+}
+
+.inicio-admin .img-añadir-encuesta:hover {
+  background-color: #080808a6;
+  transition: 0.3s;
+}
+
+#bloqueador-acciones-crear-votacion {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100 !important;
+  background-color: #0f0f0f4e;
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.menu-crear-votacion {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 300px;
+  height: 240px;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0px 0px 2.5px rgba(11, 10, 30, 0.63);
+  background-color: #111119;
+}
+
+.menu-crear-votacion div {
+  margin-bottom: 5px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.opciones-crear-votacion-menu {
+  flex: 0 !important;
+  display: flex;
+  flex-direction: row !important;
+  justify-content: space-evenly;
+}
+
+.menu-crear-votacion div button {
+  cursor: pointer;
+  height: 30px;
+  width: calc(50% - 10px);
+  max-width: 100px;
+  outline: none !important;
+}
+
+.menu-crear-votacion input[type="text"] {
+  outline: none !important;
+  border-radius: 5px;
+  height: 20px;
+  padding: 4px;
+}
+.menu-crear-votacion textarea {
+  outline: none !important;
+  border-radius: 5px;
+  height: 50px;
+  padding: 4px;
+}
+.menu-crear-votacion input[type="checkbox"] {
+  outline: none !important;
+  height:20px;
+  width: 20px;
+  margin-top: 8px;
+  position: relative;
+  top: 3px;
+  cursor: pointer;
+}
