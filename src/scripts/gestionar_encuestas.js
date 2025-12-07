@@ -12,7 +12,6 @@ const CLASS_QUITAR_MENU = "quitar-menu-log"
 const MENSAJE_ACCESO_CORRECTO = "*Acceso <ROLE> ADMIN correcto"
 const URL_IMG_AÑADIR_ENCUESTA = ""
 const $id_select_encuestas = "select-encuestas"
-const $alineador_pagina_datos_analizados_encuesta = "alineador-pagina-datos-analizados-encuesta"
 const $pagina_datos_analizados_encuesta = "admin-pagina-datos-analizados-encuesta"
 //Valores por defecto 
 const VALOR_DEFECTO_NOMBRE_USUARIO = "anónimo"
@@ -88,7 +87,7 @@ const generar_titulos_encuestas = (data, encuesta_id) => {
         if (encuesta_id == encuesta.id_encuesta) {//poner una encuesta como principal (la que se seleccionó)
             principal = "selected"
         }
-        html += `<option value="${encuesta.titulo}" ${principal}>${encuesta.titulo}</option>`
+        html += `<option value="${encuesta.titulo}" ${principal}>${encuesta.titulo}${() => { encuesta.terminada ? TEXTO_ENCUESTA_ACABADA_SELECT : "" }}</option>`
     })
     return html
 }
@@ -140,7 +139,7 @@ function recoger_datos() {
 
     return datos_recogidos
 }
-function comprobar_actualizar_datos(id_encuesta,datos_guardados) {
+function comprobar_actualizar_datos(id_encuesta, datos_guardados) {
     let nuevos_datos_guardado = datos_guardados
     const datos = recoger_datos()
     const datos_cambiar = {}
@@ -193,6 +192,26 @@ function comprobar_actualizar_datos(id_encuesta,datos_guardados) {
 }
 const Generar_configurador_encuesta = (id_encuesta) => {
     conseguir_datos_SUPABASE({ "encuesta_id": id_encuesta, "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuesta => {
+        if (encuesta.terminada) {
+            document.querySelector("#cuerpo-cosas").innerHTML += `<div class="alineador-bt-abrir-encuesta">
+            <button id="bt-abrir-encuesta">Reabrir Votacion</button>
+            </div>`
+            document.querySelector("#bt-abrir-encuesta").addEventListener("click", (e) => {
+                e.stopPropagation()
+                menu_confirmacion().then(res => {
+                    const menu = document.querySelector("#bloqueo-interacciones-menu-contexto");
+                    if (menu) menu.remove()
+                    if (res) {
+                        actualizar__encuesta(id_encuesta, { "terminada": false }).then(()=>{
+                            Generar_configurador_encuesta(id_encuesta)
+
+                        })
+                    }
+                })
+
+            })
+            return;
+        }
         //guardar datos en local
         window.sessionStorage.setItem("Ajustes_encuesta", JSON.stringify(encuesta[0]))
         const principal = encuesta[0].principal ? "checked" : ""
@@ -294,7 +313,7 @@ const Generar_configurador_encuesta = (id_encuesta) => {
                             })
                         }
                         else {//usar datos ya existentes
-                            comprobar_actualizar_datos(id_encuesta,datos_guardados)
+                            comprobar_actualizar_datos(id_encuesta, datos_guardados)
                         }
                     }
                 })
