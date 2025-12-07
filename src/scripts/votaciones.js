@@ -107,7 +107,7 @@ const generar_titulos_encuestas = (data = null, encuesta_id = -1) => {
         if (encuesta_id == encuesta.id_encuesta) {//poner una encuesta como principal (la que se seleccionó)
             principal = "selected"
         }
-        html += `<option value="${encuesta.titulo}" ${principal}>${encuesta.titulo}${() => { encuesta.terminada ? TEXTO_ENCUESTA_ACABADA_SELECT : "" }}</option>`
+        html += `<option value="${encuesta.titulo}" ${principal}>${encuesta.terminada ? "*" : "" }${encuesta.titulo}${ encuesta.terminada ? TEXTO_ENCUESTA_ACABADA_SELECT : "" }</option>`
     })
     return html
 }
@@ -544,7 +544,7 @@ globalThis.addEventListener("DOMContentLoaded", () => {
         else {//si no hay principales sin terminar
             encuesta_id = data.find(x => x.principal == true) //coger la primera que estea sin terminar
 
-            if (!encuesta_id) encuesta_id = data[0].id_encuesta //si todas estan termiandas coger la primera
+            if (!encuesta_id) encuesta_id = data[0].id_encuesta //si todas estan terminadas coger la primera
             else encuesta_id = encuesta_id.id_encuesta
         }
         if (!encuesta_id) encuesta_id = null //por si no hay encuestas
