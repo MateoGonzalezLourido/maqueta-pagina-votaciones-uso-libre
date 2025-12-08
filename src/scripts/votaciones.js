@@ -1,6 +1,7 @@
 /*Importar cosas necesarias para el codigo */
 import { supabase } from '../supabase/supabase'
 import { getBrowserFingerprint } from './datos_usuario_control.js'
+import { MANTENIMIENTO_BASE_DATOS } from './mantenimiento_servidor.js'
 
 /*ALGUNAS VARIABLES O FUNCIONES PARA HACERLAS MAS ACCESIBLES */
 //nombres bvariables localstorage
@@ -107,11 +108,12 @@ const generar_titulos_encuestas = (data = null, encuesta_id = -1) => {
         if (encuesta_id == encuesta.id_encuesta) {//poner una encuesta como principal (la que se seleccionó)
             principal = "selected"
         }
-        html += `<option value="${encuesta.titulo}" ${principal}>${encuesta.terminada ? "*" : "" }${encuesta.titulo}${ encuesta.terminada ? TEXTO_ENCUESTA_ACABADA_SELECT : "" }</option>`
+        html += `<option value="${encuesta.titulo}" ${principal}>${encuesta.terminada ? "*" : ""}${encuesta.titulo}${encuesta.terminada ? TEXTO_ENCUESTA_ACABADA_SELECT : ""}</option>`
     })
     return html
 }
 const generar_opciones_encuestas = (encuestas, encuesta_id, contador_votaciones, opciones_votadas = []) => {
+    if (encuestas[0].terminada) return "";
     let html_opciones = ``
     encuestas.forEach(encuesta => {//para buscar la encuesta que esta seleccionada
         if (encuesta.id_encuesta == encuesta_id) {//esta es la encuesta que estamos mirando
@@ -181,9 +183,16 @@ function mirar_opciones_votadas(votaciones) {
 }
 //ES EL "MAIN" O "CONTROLADOR" DE LAS ENCUESTAS 
 function generar_encuestas(data = null, encuesta_id = null, contador_votaciones = null, opciones_votadas = null) {
-    const datos_anonimos = data != null ? data.datos_anonimos : null
-    const votacion_anonima = data != null ? data.voto_anonimo : null
-    if (data.terminada || data == null) {//votacion terminada o no hay datos
+    const inicio_votacion_encontrada = data.find(x => x.id_encuesta == encuesta_id)
+    let datos_anonimos = null
+    let votacion_anonima = null
+    let terminada = null
+    if (inicio_votacion_encontrada) {
+        datos_anonimos = inicio_votacion_encontrada.datos_anonimos
+        votacion_anonima = inicio_votacion_encontrada.voto_anonimo
+        terminada = inicio_votacion_encontrada.terminada
+    }
+    if (terminada || data == null) {//votacion terminada o no hay datos
         document.querySelector("#main").innerHTML = `
         <select id="${$id_select_encuestas}">
         ${generar_titulos_encuestas(data, encuesta_id)}
@@ -534,31 +543,35 @@ function generar_encuestas(data = null, encuesta_id = null, contador_votaciones 
 
 //iniciador de codigo
 globalThis.addEventListener("DOMContentLoaded", () => {
-    conseguir_datos_SUPABASE({}).then(data => {
-        //escoger una encuesta como principal(si hay solo una principal esa es, sino se coge la primera que llegue)
-        //esto se hace solo al inicio, luego solo se pone la que se seleccione
-        let encuesta_id = data.find(x => x.principal && !x.terminada == true)
-        if (encuesta_id) {//coger id
-            encuesta_id = encuesta_id.id_encuesta
-        }
-        else {//si no hay principales sin terminar
-            encuesta_id = data.find(x => x.principal == true) //coger la primera que estea sin terminar
+    MANTENIMIENTO_BASE_DATOS().then(() => {
+        conseguir_datos_SUPABASE({}).then(data => {
+            //aqui hacemos la comprobación /  mantenimiento de las votaciones y votos -> terminar, republicar,borrar ...
 
-            if (!encuesta_id) encuesta_id = data[0].id_encuesta //si todas estan terminadas coger la primera
-            else encuesta_id = encuesta_id.id_encuesta
-        }
-        if (!encuesta_id) encuesta_id = null //por si no hay encuestas
-        conseguir_datos_SUPABASE({ "encuesta_id": encuesta_id, "tabla": NOMBRE_TABLA_VOTACIONES }).then((votaciones) => {
-            //registro de votos: hacer un recuento de los datos separados por opcion
-            let contador_votaciones = contador_votos(votaciones)
-            //crear/mostrar opciones de la encuesta para votar y sus votos
-            let opciones_votadas = mirar_opciones_votadas(votaciones)
-            //opciones
-            const datos_anonimos = data.filter(x => x.id_encuesta == encuesta_id)[0].voto_anonimo
-            if (!datos_anonimos) {
-                window.sessionStorage.setItem(NAME_DT_LOC_VOTACIONES, JSON.stringify(votaciones))
+            //escoger una encuesta como principal(si hay solo una principal esa es, sino se coge la primera que llegue)
+            //esto se hace solo al inicio, luego solo se pone la que se seleccione
+            let encuesta_id = data.find(x => x.principal && !x.terminada == true)
+            if (encuesta_id) {//coger id
+                encuesta_id = encuesta_id.id_encuesta
             }
-            generar_encuestas(data, encuesta_id, contador_votaciones, opciones_votadas)
+            else {//si no hay principales sin terminar
+                encuesta_id = data.find(x => x.principal == true) //coger la primera que estea sin terminar
+
+                if (!encuesta_id) encuesta_id = data[0].id_encuesta //si todas estan terminadas coger la primera
+                else encuesta_id = encuesta_id.id_encuesta
+            }
+            if (!encuesta_id) encuesta_id = null //por si no hay encuestas
+            conseguir_datos_SUPABASE({ "encuesta_id": encuesta_id, "tabla": NOMBRE_TABLA_VOTACIONES }).then((votaciones) => {
+                //registro de votos: hacer un recuento de los datos separados por opcion
+                let contador_votaciones = contador_votos(votaciones)
+                //crear/mostrar opciones de la encuesta para votar y sus votos
+                let opciones_votadas = mirar_opciones_votadas(votaciones)
+                //opciones
+                const datos_anonimos = data.filter(x => x.id_encuesta == encuesta_id)[0].voto_anonimo
+                if (!datos_anonimos) {
+                    window.sessionStorage.setItem(NAME_DT_LOC_VOTACIONES, JSON.stringify(votaciones))
+                }
+                generar_encuestas(data, encuesta_id, contador_votaciones, opciones_votadas)
+            })
         })
     })
 })

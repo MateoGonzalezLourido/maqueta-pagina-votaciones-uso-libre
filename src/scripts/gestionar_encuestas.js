@@ -47,7 +47,7 @@ const borrar_votacion_encuesta = async (id_nombre, id_encuesta, opcion_votada_en
         console.error("Error al borrar el voto:", error)
     }
 }
-const añadir_encuesta = async ({ titulo = "Votacion", opciones = [], principal = false, duracion_fechas = [], republicar = false, voto_unico = false, terminada = false, mostrar_resultados_cerrada = true, datos_anonimos = false, voto_anonimo = false }) => {
+const añadir_encuesta = async ({ titulo = "Votacion", opciones = [], principal = false, duracion_fechas = [], republicar = false, voto_unico = false, terminada = false, mostrar_resultados_cerrada = true, datos_anonimos = false, voto_anonimo = false, fecha_terminada = null }) => {
     const { data, error } = await supabase
         .from(NOMBRE_TABLA_ENCUESTAS)
         .insert([
@@ -61,7 +61,8 @@ const añadir_encuesta = async ({ titulo = "Votacion", opciones = [], principal 
                 "terminada": terminada,
                 "mostrar_resultados_cerrada": mostrar_resultados_cerrada,
                 "datos_anonimos": datos_anonimos,
-                "voto_anonimo": voto_anonimo
+                "voto_anonimo": voto_anonimo,
+                "fecha_terminada": null
             }
         ]);
     if (error) {
@@ -208,7 +209,7 @@ const Generar_configurador_encuesta = (id_encuesta) => {
                     const menu = document.querySelector("#bloqueo-interacciones-menu-contexto");
                     if (menu) menu.remove()
                     if (res) {
-                        actualizar__encuesta(id_encuesta, { "terminada": false }).then(() => {
+                        actualizar__encuesta(id_encuesta, { "terminada": false, "fecha_terminada": null }).then(() => {
                             Generar_configurador_encuesta(id_encuesta)
                         })
                     }
@@ -333,7 +334,10 @@ const Generar_configurador_encuesta = (id_encuesta) => {
                         const menu = document.querySelector("#bloqueo-interacciones-menu-contexto");
                         if (menu) menu.remove()
                         if (res) {
-                            actualizar__encuesta(id_encuesta, { "terminada": true }).then(() => {
+                            const fecha_hora_actual = new Date()
+                            const fecha = `${fecha_hora_actual.getFullYear()}-${String(fecha_hora_actual.getMonth() + 1).padStart(2, '0')}-${String(fecha_hora_actual.getDate()).padStart(2, '0')}`;
+
+                            actualizar__encuesta(id_encuesta, { "terminada": true, "fecha_terminada": fecha.toString() }).then(() => {
                                 Generar_configurador_encuesta(id_encuesta)
                             })
                         }
