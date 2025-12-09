@@ -80,9 +80,11 @@ const actualizar__encuesta = async (id_encuesta, datos_cambiar) => {
         console.error("Error al cambiar datos de la encuesta:", error)
     }
 }
+/*ACTUALMENTE ESTA ADMIN KEY ESTA PUBLICA */
 // TODO: algo pendiente
 function verificar_acceso_admin(entrada) {//132546781535
-    if (entrada == 1) {
+    if (entrada == import.meta.env.VITE_ADMIN_KEY
+    ) {
         return true
     }
     return false
@@ -180,10 +182,14 @@ function comprobar_actualizar_datos(id_encuesta, datos_guardados) {
     //fechas inicio fin
     const fechas = datos.duracion_fechas
     if (datos_guardados.duracion_fechas[0] != fechas[0] || datos_guardados.duracion_fechas[1] != fechas[1]) {
+        console.log(datos_cambiar,fechas)
+
         datos_cambiar.duracion_fechas = fechas
+        console.log(datos_cambiar.duracion_fechas)
         nuevos_datos_guardado.duracion_fechas = fechas
     }
-
+    //poner fechas por defecto
+    
     if (datos_guardados.republicar != datos.republicar) {
         datos_cambiar.republicar = datos.republicar
         nuevos_datos_guardado.republicar = datos.republicar
@@ -208,6 +214,7 @@ function comprobar_actualizar_datos(id_encuesta, datos_guardados) {
     //actualizar local
     if (Object.keys(datos_cambiar).length > 0) {
         window.sessionStorage.setItem("Ajustes_encuesta", JSON.stringify(nuevos_datos_guardado))
+        console.log(datos_cambiar)
         actualizar__encuesta(id_encuesta, datos_cambiar).then(() => {
             document.querySelector("#app").insertAdjacentHTML("afterend", `
                 <div id="mensaje-datos-guardados-exito">
@@ -335,7 +342,6 @@ const Generar_configurador_encuesta = (encuesta_id) => {
                         if (menu) menu.remove()
                         if (res) {//pedir los datos
                             let datos_guardados = JSON.parse(window.sessionStorage.getItem("Ajustes_encuesta"))
-                            console.log(datos_guardados)
                             if (datos_guardados != null && datos_guardados.id_encuesta != encuesta_id) {
                                 conseguir_datos_SUPABASE({ "encuesta_id": encuesta_id, "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuesta => {
                                     comprobar_actualizar_datos(encuesta)
