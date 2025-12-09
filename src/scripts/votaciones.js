@@ -120,6 +120,9 @@ const generar_opciones_encuestas = (encuestas, encuesta_id, contador_votaciones,
     let html_opciones = ``
     encuestas.forEach(encuesta => {//para buscar la encuesta que esta seleccionada
         if (encuesta.id_encuesta == encuesta_id && encuesta.terminada == false) {//esta es la encuesta que estamos mirando
+            const fecha_actual = new Date()
+            const fecha_inicio = new Date(encuesta.duracion_fechas[0])
+            if (fecha_inicio > fecha_actual) return;//aun no empezo
             for (let i = 0; i < encuesta.opciones.length; i++) {//para mostrar las opciones de la encuesta seleccionada
                 //mirar si votaste esa opcion
                 let checked = false
@@ -551,13 +554,16 @@ globalThis.addEventListener("DOMContentLoaded", () => {
             return conseguir_datos_SUPABASE({});
         })
         .then((data) => {
-            let encuesta_id = data.find(x => x.principal && !x.terminada == true);
+            const fecha_actual = new Date()
+            let encuesta_id = data.find(x => x.principal && !(x.terminada) && (fecha_actual < new Date(x.duracion_fechas[0])));
             if (encuesta_id) encuesta_id = encuesta_id.id_encuesta;
             else {
-                encuesta_id = data.find(x => x.principal == true);
-                encuesta_id = encuesta_id ? encuesta_id.id_encuesta : data[0]?.id_encuesta ?? null;
+                encuesta_id = data.find(x => x.principal && (fecha_actual < new Date(x.duracion_fechas[0])));
+                encuesta_id = encuesta_id ? encuesta_id.id_encuesta : null;
             }
-
+            if (encuesta_id == null) {
+                alert("NO HAY VOTACIONES disponibles")
+            }
             return conseguir_datos_SUPABASE({
                 encuesta_id,
                 tabla: NOMBRE_TABLA_VOTACIONES
