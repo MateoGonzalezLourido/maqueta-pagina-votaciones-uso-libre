@@ -35,19 +35,6 @@ const conseguir_datos_SUPABASE = async ({ encuesta_id = null, tabla = NOMBRE_TAB
     return data
 }
 
-
-const borrar_votacion_encuesta = async (id_nombre, id_encuesta, opcion_votada_encuesta) => {
-    const { error } = await supabase
-        .from(NOMBRE_TABLA_VOTACIONES)
-        .delete()
-        .eq('id_nombre', id_nombre)
-        .eq('id_encuesta', id_encuesta)
-        .eq("opcion_votada_encuesta", opcion_votada_encuesta);
-
-    if (error) {
-        console.error("Error al borrar el voto:", error)
-    }
-}
 const añadir_encuesta = async ({ titulo = "Votacion", opciones = [], principal = false, duracion_fechas = [], republicar = false, voto_unico = false, terminada = false, mostrar_resultados_cerrada = true, datos_anonimos = false, voto_anonimo = false, fecha_terminada = null }) => {
     const { data, error } = await supabase
         .from(NOMBRE_TABLA_ENCUESTAS)
@@ -138,9 +125,7 @@ function recoger_datos() {
     datos_recogidos.voto_unico = document.querySelector("#input-votounico").checked
     datos_recogidos.principal = document.querySelector("#input-principal").checked
     //fecha inicio fin
-    datos_recogidos.duracion_fechas = ["", ""]
-    datos_recogidos.duracion_fechas[0] = document.querySelector("#input-fecha-inicio").value
-    datos_recogidos.duracion_fechas[1] = document.querySelector("#input-fecha-fin").value
+    datos_recogidos.duracion_fechas = [document.querySelector("#input-fecha-inicio").value, document.querySelector("#input-fecha-fin").value]
     //fechas validas?
     const fecha_actual = new Date()
     const fecha_cambiada_inicio = new Date(datos_recogidos.duracion_fechas[0])
@@ -235,6 +220,7 @@ const Generar_configurador_encuesta = (encuesta_id) => {
             document.querySelector("#cuerpo-cosas").innerHTML = `<div class="alineador-bt-abrir-encuesta">
             <button id="bt-abrir-encuesta">Reabrir Votacion</button>
             </div>`
+            //evento reabrir votación
             document.querySelector("#bt-abrir-encuesta").addEventListener("click", (e) => {
                 e.stopPropagation()
                 menu_confirmacion().then(res => {
@@ -242,6 +228,7 @@ const Generar_configurador_encuesta = (encuesta_id) => {
                     if (menu) menu.remove()
                     if (res) {
                         actualizar__encuesta(encuesta_id, { "terminada": false, "fecha_terminada": null }).then(() => {
+                            //actualizar pantalla
                             Generar_configurador_encuesta(encuesta_id)
                         })
                     }
@@ -258,69 +245,86 @@ const Generar_configurador_encuesta = (encuesta_id) => {
             const mostrarresultados = encuesta[0].mostrar_resultados_cerrada ? "checked" : ""
             const datosanonimos = encuesta[0].datos_anonimos ? "checked" : ""
             const votoanonimo = encuesta[0].voto_anonimo ? "checked" : ""
+            const d = new Date()
+            const f = new Date();
+            f.setDate(f.getDate() + 7);
+
+            const fecha_actual = String(d.getDate()).padStart(2, "0") + "-" +
+                String(d.getMonth() + 1).padStart(2, "0") + "-" +
+                String(d.getFullYear()) + "T" +
+                String(d.getHours()).padStart(2, "0") + ":" +
+                String(d.getMinutes()).padStart(2, "0");
+
+            const fecha_final = String(f.getDate()).padStart(2, "0") + + "-" +
+                String(f.getMonth() + 1).padStart(2, "0") + "-" +
+                String(f.getFullYear()) + "T" +
+                String(f.getHours()).padStart(2, "0") + ":" +
+                String(f.getMinutes()).padStart(2, "0");
+            const fecha_inicio = encuesta[0].duracion_fechas[0] != "" ? encuesta[0].duracion_fechas[0] : fecha_actual
+            const fecha_fin = encuesta[0].duracion_fechas[1] != "" ? encuesta[0].duracion_fechas[1] : fecha_final
             document.querySelector("#cuerpo-cosas").innerHTML = `
-        <div class="apartado">
-            <h3>>Principales</h3>
-            <div>
-                <label for="input-titulo">Título</label>
-                <input type="text" id="input-titulo" value="${encuesta[0].titulo}" placeholder="Sin Título">
-            </div>
-            <div class="apartado-opciones">
-                <span>Opciones</span>
-                <textarea id="input-opciones" placeholder="opcion1, opcion2, ...">${encuesta[0].opciones}</textarea>
-            </div>
-            <div>
-            <label for="input-votounico">Voto único
-                <input type="checkbox"id="input-votounico"${votounico}>
-            </label>
-            </div>
-        </div>
-        <div class="apartado">
-            <h3>>Configuraciones</h3>
-            <div>
-            <label for="input-principal">*Principal      
-                <input type="checkbox" id="input-principal" ${principal}>
-            </label>
-            </div>
-            <div>
-                <label for="input-fecha-inicio">*Fecha inicio</label>
-                <input type="datetime-local" id="input-fecha-inicio"placeholder="dd/mm/yy" value="${encuesta[0].duracion_fechas[0]}">
-            </div>
-            <div>
-                <label for="input-fecha-fin">*Fecha fin</label>
-                <input type="datetime-local" id="input-fecha-fin"placeholder="dd/mm/yy" value="${encuesta[0].duracion_fechas[1]}">
-            </div>      
-            <div id="text-fechas-validas" style="display:none;color:red">*Introduce fechas válidas</div>
-            <div>
-                <label for="input-republicar">*Republicar
-                    <input type="checkbox" id="input-republicar"${republicar}>
+            <div class="apartado">
+                <h3>>Principales</h3>
+                <div>
+                    <label for="input-titulo">Título</label>
+                    <input type="text" id="input-titulo" value="${encuesta[0].titulo}" placeholder="Sin Título">
+                </div>
+                <div class="apartado-opciones">
+                    <span>Opciones</span>
+                    <textarea id="input-opciones" placeholder="opcion1, opcion2, ...">${encuesta[0].opciones}</textarea>
+                </div>
+                <div>
+                <label for="input-votounico">Voto único
+                    <input type="checkbox"id="input-votounico"${votounico}>
                 </label>
+                </div>
             </div>
-            <div>
-                <label for="input-mostrarresultados">*Mostrar resultados finales
-                    <input type="checkbox" id="input-mostrarresultados"${mostrarresultados}>
+            <div class="apartado">
+                <h3>>Configuraciones</h3>
+                <div>
+                <label for="input-principal">*Principal      
+                    <input type="checkbox" id="input-principal" ${principal}>
                 </label>
+                </div>
+                <div>
+                    <label for="input-fecha-inicio">*Fecha inicio</label>
+                    <input type="datetime-local" id="input-fecha-inicio"placeholder="dd/mm/yy" value="${fecha_inicio}">
+                </div>
+                <div>
+                    <label for="input-fecha-fin">*Fecha fin</label>
+                    <input type="datetime-local" id="input-fecha-fin"placeholder="dd/mm/yy" value="${fecha_fin}">
+                </div>      
+                <div id="text-fechas-validas" style="display:none;color:red">*Introduce fechas válidas</div>
+                <div>
+                    <label for="input-republicar">*Republicar
+                        <input type="checkbox" id="input-republicar"${republicar}>
+                    </label>
+                </div>
+                <div>
+                    <label for="input-mostrarresultados">*Mostrar resultados finales
+                        <input type="checkbox" id="input-mostrarresultados"${mostrarresultados}>
+                    </label>
+                </div>
             </div>
-        </div>
-        <div class="apartado">
-            <h3>>Privacidad</h3>
-            <div>
-                <label for="input-anonimo">Voto anónimo</br>(no se guarda el nombre del votante)
-                    <input type="checkbox" id="input-anonimo"${votoanonimo}>
-                </label>
+            <div class="apartado">
+                <h3>>Privacidad</h3>
+                <div>
+                    <label for="input-anonimo">Voto anónimo</br>(no se guarda el nombre del votante)
+                        <input type="checkbox" id="input-anonimo"${votoanonimo}>
+                    </label>
+                </div>
+                <div>
+                    <label for="input-datos_anonimos">Resultados visibles solo para admin
+                        <input type="checkbox" id="input-datos_anonimos"${datosanonimos}>
+                    </label>
+                </div>
             </div>
-            <div>
-                <label for="input-datos_anonimos">Resultados visibles solo para admin
-                    <input type="checkbox" id="input-datos_anonimos"${datosanonimos}>
-                </label>
+            <div class="opciones-encuesta-principales">
+                <button id="bt-cerrar-encuesta">Cerrar votacion</button>
+                <button id="bt-guardar-cambios-encuesta">Guardar cambios</button>
+                <button id="bt-cancelar-cambios-encuesta">Cancelar cambios</button>
             </div>
-        </div>
-        <div class="opciones-encuesta-principales">
-            <button id="bt-cerrar-encuesta">Cerrar votacion</button>
-            <button id="bt-guardar-cambios-encuesta">Guardar cambios</button>
-            <button id="bt-cancelar-cambios-encuesta">Cancelar cambios</button>
-        </div>
-        `
+            `
             //reiniciar cambios
             if (document.querySelector("#bt-cancelar-cambios-encuesta")) {
                 document.querySelector("#bt-cancelar-cambios-encuesta").addEventListener("click", (e) => {
@@ -346,11 +350,11 @@ const Generar_configurador_encuesta = (encuesta_id) => {
                             let datos_guardados = JSON.parse(window.sessionStorage.getItem("Ajustes_encuesta"))
                             if (datos_guardados != null && datos_guardados.id_encuesta != encuesta_id) {
                                 conseguir_datos_SUPABASE({ "encuesta_id": encuesta_id, "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuesta => {
-                                    comprobar_actualizar_datos(encuesta)
-
+                                    comprobar_actualizar_datos(encuesta_id, encuesta)
                                 })
                             }
                             else {//usar datos ya existentes
+
                                 comprobar_actualizar_datos(encuesta_id, datos_guardados)
                             }
                         }
@@ -614,8 +618,25 @@ const Generar_cuerpo_configurador_votacion = (data, id_encuesta, opcion) => {
             }
             const voto_unico_votacion = document.querySelector("#input-voto-unico-crear-votacion").checked
             if (titulo_votacion.length > 0 && opciones.length > 0 && (voto_unico_votacion == false || voto_unico_votacion == true)) {
-                //crear votacionw
-                añadir_encuesta({ "titulo": titulo_votacion, "opciones": opciones, "voto_unico": voto_unico_votacion }).then(() => {
+                //crear votacion
+                const d = new Date()
+                const f = new Date();
+                f.setDate(f.getDate() + 7);
+
+                const fecha_actual = String(d.getDate()).padStart(2, "0") + "-" +
+                    String(d.getMonth() + 1).padStart(2, "0") + "-" +
+                    String(d.getFullYear()) + "T" +
+                    String(d.getHours()).padStart(2, "0") + ":" +
+                    String(d.getMinutes()).padStart(2, "0");
+
+                const fecha_final =
+                    String(f.getDate()).padStart(2, "0") + "-" +
+                    String(f.getMonth() + 1).padStart(2, "0") + "-" +
+                    String(f.getFullYear()) + "T" +
+                    String(f.getHours()).padStart(2, "0") + ":" +
+                    String(f.getMinutes()).padStart(2, "0");
+                    
+                añadir_encuesta({ "titulo": titulo_votacion, "opciones": opciones, "voto_unico": voto_unico_votacion, "duracion_fechas": [fecha_actual, fecha_final] }).then(() => {
                     conseguir_datos_SUPABASE({ "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuestas => {
                         document.querySelector("#select-encuestas").innerHTML = generar_titulos_encuestas(encuestas, id_encuesta)
                         document.querySelector("#bloqueador-acciones-crear-votacion").remove()
