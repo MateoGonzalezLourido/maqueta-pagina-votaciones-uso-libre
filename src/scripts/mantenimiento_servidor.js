@@ -1,54 +1,57 @@
 import { supabase } from '../supabase/supabase'
 
-
 export async function MANTENIMIENTO_BASE_DATOS() {
-    conseguir_datos_SUPABASE({}).then((votaciones) => {
-        //hay votaciones terminadas sin terminar?
-        votaciones.forEach(vt => {
-            if (vt.terminada) return;//cerrar este ciclo
-            const fecha_hora_actual = new Date().toLocaleString()
-            const fecha_hora_fin_votacion = new Date(vt.duracion_fechas[1])
+    const votaciones = await conseguir_datos_SUPABASE({});
+    // 1. Finalizar votaciones caducadas
+    for (const vt of votaciones) {
+        if (vt.terminada) continue;
 
-            if (fecha_hora_fin_votacion >= fecha_hora_actual) {//finalizar votación
-                //actualizar base datos
+        const ahora = new Date();
+        const fin = new Date(vt.duracion_fechas[1]);
 
-                const fecha = `${fecha_hora_actual.getFullYear()}-${String(fecha_hora_actual.getMonth() + 1).padStart(2, '0')}-${String(fecha_hora_actual.getDate()).padStart(2, '0')}`;
+        if (fin <= ahora) {
+            const fecha = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`;
 
-                actualizar__encuesta(vt.id_encuesta, { "terminada": true, "fecha_terminada": fecha.toString() })
-                //hay que republicar la votacion?
-                if (vt.republicar) {//crear otra encuesta con los mismos datos pero distinto ID
-                    añadir_encuesta({
-                        "titulo": vt.titulo,
-                        "opciones": vt.opciones,
-                        "principal": vt.principal,
-                        "duracion_fechas": vt.duracion_fechas,
-                        "republicar": vt.republicar,
-                        "voto_unico": vt.voto_unico,
-                        "terminada": false,
-                        "mostrar_resultados_cerrada": vt.mostrar_resultados_cerrada,
-                        "datos_anonimos": vt.datos_anonimos,
-                        "voto_anonimo": vt.voto_anonimo
-                    })
-                }
+            // esperar actualización
+            await actualizar__encuesta(vt.id_encuesta, {
+                terminada: true,
+                fecha_terminada: fecha
+            });
+
+            if (vt.republicar) {
+                await añadir_encuesta({
+                    titulo: vt.titulo,
+                    opciones: vt.opciones,
+                    principal: vt.principal,
+                    duracion_fechas: vt.duracion_fechas,
+                    republicar: vt.republicar,
+                    voto_unico: vt.voto_unico,
+                    terminada: false,
+                    mostrar_resultados_cerrada: vt.mostrar_resultados_cerrada,
+                    datos_anonimos: vt.datos_anonimos,
+                    voto_anonimo: vt.voto_anonimo
+                });
             }
-        })
-        //hay votaciones terminadas que los datos guardados ya pasaron 3semanas?
-        votaciones.forEach(vt => {
-            if (!vt.terminada) return; //terminar este ciclo
-            const fecha_actual = new Date()
-            const fecha_terminada = new Date(vt.fecha_terminada)
-            const f_limite = fecha_terminada.setDate(fecha_terminada.getDate() + 21)//fecha limite
-            if (f_limite < fecha_actual) {
-                //borrar votacion +votos de esa votacion
-                borrar_datos("encuestas", vt.id_encuesta)//encuesta
-                borrar_datos("encuestas_votaciones", vt.id_encuesta)//votos encuesta
-            }
-        })
-    })
+        }
+    }
+    // 2. Borrar votaciones expiradas 21 días después
+    for (const vt of votaciones) {
+        if (!vt.terminada) continue;
+
+        const ahora = new Date();
+        const fecha_terminada = new Date(vt.fecha_terminada);
+        const limite = new Date(fecha_terminada.getTime() + 21 * 24 * 60 * 60 * 1000);
+
+        if (limite < ahora) {
+            await borrar_datos("encuestas", vt.id_encuesta);
+            await borrar_datos("encuestas_votaciones", vt.id_encuesta);
+        }
+    }
 }
+
 const añadir_encuesta = async ({ titulo = "Votacion", opciones = [], principal = false, duracion_fechas = [], republicar = false, voto_unico = false, terminada = false, mostrar_resultados_cerrada = true, datos_anonimos = false, voto_anonimo = false, fecha_terminada = null }) => {
     const { data, error } = await supabase
-        .from(NOMBRE_TABLA_ENCUESTAS)
+        .from("encuestas")
         .insert([
             {
                 "titulo": titulo,

@@ -113,10 +113,9 @@ const generar_titulos_encuestas = (data = null, encuesta_id = -1) => {
     return html
 }
 const generar_opciones_encuestas = (encuestas, encuesta_id, contador_votaciones, opciones_votadas = []) => {
-    if (encuestas[0].terminada) return "";
     let html_opciones = ``
     encuestas.forEach(encuesta => {//para buscar la encuesta que esta seleccionada
-        if (encuesta.id_encuesta == encuesta_id) {//esta es la encuesta que estamos mirando
+        if (encuesta.id_encuesta == encuesta_id && encuesta.terminada == false) {//esta es la encuesta que estamos mirando
             for (let i = 0; i < encuesta.opciones.length; i++) {//para mostrar las opciones de la encuesta seleccionada
                 //mirar si votaste esa opcion
                 let checked = false
@@ -183,6 +182,7 @@ function mirar_opciones_votadas(votaciones) {
 }
 //ES EL "MAIN" O "CONTROLADOR" DE LAS ENCUESTAS 
 function generar_encuestas(data = null, encuesta_id = null, contador_votaciones = null, opciones_votadas = null) {
+    console.log(data, encuesta_id, contador_votaciones, opciones_votadas)
     const inicio_votacion_encontrada = data.find(x => x.id_encuesta == encuesta_id)
     let datos_anonimos = null
     let votacion_anonima = null
@@ -229,7 +229,7 @@ function generar_encuestas(data = null, encuesta_id = null, contador_votaciones 
     if (document.querySelector(`#${$id_select_encuestas}`)) {
         document.querySelector(`#${$id_select_encuestas}`).addEventListener("change", (e) => {
             const titulo_escogido = e.target.value
-            const encuesta_escogida = data.find(x => x.titulo == titulo_escogido)
+            const encuesta_escogida = data(x => x.titulo == titulo_escogido)
             //registro de votos: hacer un recuento de los datos separados por opcion
             conseguir_datos_SUPABASE({ "encuesta_id": encuesta_escogida.id_encuesta, "tabla": NOMBRE_TABLA_VOTACIONES }).then((votaciones) => {
                 let contador_votaciones = contador_votos(votaciones, encuesta_escogida.id_encuesta)
@@ -543,36 +543,35 @@ function generar_encuestas(data = null, encuesta_id = null, contador_votaciones 
 
 //iniciador de codigo
 globalThis.addEventListener("DOMContentLoaded", () => {
-    MANTENIMIENTO_BASE_DATOS().then(() => {
-        conseguir_datos_SUPABASE({}).then(data => {
-            //aqui hacemos la comprobación /  mantenimiento de las votaciones y votos -> terminar, republicar,borrar ...
-
-            //escoger una encuesta como principal(si hay solo una principal esa es, sino se coge la primera que llegue)
-            //esto se hace solo al inicio, luego solo se pone la que se seleccione
-            let encuesta_id = data.find(x => x.principal && !x.terminada == true)
-            if (encuesta_id) {//coger id
-                encuesta_id = encuesta_id.id_encuesta
-            }
-            else {//si no hay principales sin terminar
-                encuesta_id = data.find(x => x.principal == true) //coger la primera que estea sin terminar
-
-                if (!encuesta_id) encuesta_id = data[0].id_encuesta //si todas estan terminadas coger la primera
-                else encuesta_id = encuesta_id.id_encuesta
-            }
-            if (!encuesta_id) encuesta_id = null //por si no hay encuestas
-            conseguir_datos_SUPABASE({ "encuesta_id": encuesta_id, "tabla": NOMBRE_TABLA_VOTACIONES }).then((votaciones) => {
-                //registro de votos: hacer un recuento de los datos separados por opcion
-                let contador_votaciones = contador_votos(votaciones)
-                //crear/mostrar opciones de la encuesta para votar y sus votos
-                let opciones_votadas = mirar_opciones_votadas(votaciones)
-                //opciones
-                const datos_anonimos = data.filter(x => x.id_encuesta == encuesta_id)[0].voto_anonimo
-                if (!datos_anonimos) {
-                    window.sessionStorage.setItem(NAME_DT_LOC_VOTACIONES, JSON.stringify(votaciones))
-                }
-                generar_encuestas(data, encuesta_id, contador_votaciones, opciones_votadas)
-            })
+    MANTENIMIENTO_BASE_DATOS()
+        .then(() => {
+            return conseguir_datos_SUPABASE({});
         })
-    })
+        .then((data) => {
+            let encuesta_id = data.find(x => x.principal && !x.terminada == true);
+            if (encuesta_id) encuesta_id = encuesta_id.id_encuesta;
+            else {
+                encuesta_id = data.find(x => x.principal == true);
+                encuesta_id = encuesta_id ? encuesta_id.id_encuesta : data[0]?.id_encuesta ?? null;
+            }
+
+            return conseguir_datos_SUPABASE({
+                encuesta_id,
+                tabla: NOMBRE_TABLA_VOTACIONES
+            }).then(votaciones => ({ data, encuesta_id, votaciones }));
+        })
+        .then(({ data, encuesta_id, votaciones }) => {
+            const contador_votaciones = contador_votos(votaciones);
+            const opciones_votadas = mirar_opciones_votadas(votaciones);
+
+            const datos_anonimos =
+                data.find(x => x.id_encuesta == encuesta_id)?.voto_anonimo;
+
+            if (!datos_anonimos) {
+                sessionStorage.setItem(NAME_DT_LOC_VOTACIONES, JSON.stringify(votaciones));
+            }
+            generar_encuestas(data, encuesta_id, contador_votaciones, opciones_votadas);
+        });
+
 })
 
