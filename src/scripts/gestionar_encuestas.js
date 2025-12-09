@@ -29,14 +29,14 @@ const conseguir_datos_SUPABASE = async ({ encuesta_id = null, tabla = NOMBRE_TAB
 
     const { data, error } = await query;
     if (error) {
-        console.log("ERROR al recibir datos de las encuestas:", error)
+        console.error("ERROR al recibir datos de las encuestas:", error)
         return []
     }
     return data
 }
 
-const añadir_encuesta = async ({ titulo = "Votacion", opciones = [], principal = false, duracion_fechas = [], republicar = false, voto_unico = false, terminada = false, mostrar_resultados_cerrada = true, datos_anonimos = false, voto_anonimo = false, fecha_terminada = null }) => {
-    const { data, error } = await supabase
+const añadir_encuesta = async ({ titulo = "Votacion", opciones = [], principal = false, duracion_fechas = [], republicar = false, voto_unico = false, terminada = false, mostrar_resultados_cerrada = true, datos_anonimos = false, voto_anonimo = false }) => {
+    const { error } = await supabase
         .from(NOMBRE_TABLA_ENCUESTAS)
         .insert([
             {
@@ -131,7 +131,6 @@ function recoger_datos() {
     const fecha_cambiada_inicio = new Date(datos_recogidos.duracion_fechas[0])
     const fecha_cambiada_fin = new Date(datos_recogidos.duracion_fechas[1])
     if ((fecha_actual >= fecha_cambiada_inicio) || (fecha_actual >= fecha_cambiada_fin) || (fecha_cambiada_inicio >= fecha_cambiada_fin)) return ({ "datos_recogidos": {}, "error": true })
-    console.log(datos_recogidos)
     datos_recogidos.republicar = document.querySelector("#input-republicar").checked
     datos_recogidos.mostrar_resultados_cerrada = document.querySelector("#input-mostrarresultados").checked
     datos_recogidos.voto_anonimo = document.querySelector("#input-anonimo").checked
@@ -166,13 +165,9 @@ function comprobar_actualizar_datos(id_encuesta, datos_guardados) {
         nuevos_datos_guardado.principal = datos.principal
     }
     //fechas inicio fin
-    console.log(datos)
     const fechas = datos.duracion_fechas
     if (datos_guardados.duracion_fechas[0] != fechas[0] || datos_guardados.duracion_fechas[1] != fechas[1]) {
-        console.log(datos_cambiar, fechas)
-
         datos_cambiar.duracion_fechas = fechas
-        console.log(datos_cambiar.duracion_fechas)
         nuevos_datos_guardado.duracion_fechas = fechas
     }
     //poner fechas por defecto
@@ -201,7 +196,6 @@ function comprobar_actualizar_datos(id_encuesta, datos_guardados) {
     //actualizar local
     if (Object.keys(datos_cambiar).length > 0) {
         window.sessionStorage.setItem("Ajustes_encuesta", JSON.stringify(nuevos_datos_guardado))
-        console.log(datos_cambiar)
         actualizar__encuesta(id_encuesta, datos_cambiar).then(() => {
             document.querySelector("#app").insertAdjacentHTML("afterend", `
                 <div id="mensaje-datos-guardados-exito">
@@ -214,6 +208,7 @@ function comprobar_actualizar_datos(id_encuesta, datos_guardados) {
         })
     }
 }
+
 const Generar_configurador_encuesta = (encuesta_id) => {
     conseguir_datos_SUPABASE({ "encuesta_id": encuesta_id, "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuesta => {
         if (encuesta[0].terminada) {
@@ -623,19 +618,17 @@ const Generar_cuerpo_configurador_votacion = (data, id_encuesta, opcion) => {
                 const f = new Date();
                 f.setDate(f.getDate() + 7);
 
-                const fecha_actual = String(d.getDate()).padStart(2, "0") + "-" +
+                const fecha_actual = String(d.getFullYear()) + "-" +
                     String(d.getMonth() + 1).padStart(2, "0") + "-" +
-                    String(d.getFullYear()) + "T" +
+                    String(d.getDate()).padStart(2, "0") + "T" +
                     String(d.getHours()).padStart(2, "0") + ":" +
                     String(d.getMinutes()).padStart(2, "0");
 
-                const fecha_final =
-                    String(f.getDate()).padStart(2, "0") + "-" +
+                const fecha_final = String(f.getFullYear()) + "-" +
                     String(f.getMonth() + 1).padStart(2, "0") + "-" +
-                    String(f.getFullYear()) + "T" +
+                    String(f.getDate()).padStart(2, "0") + "T" +
                     String(f.getHours()).padStart(2, "0") + ":" +
                     String(f.getMinutes()).padStart(2, "0");
-                    
                 añadir_encuesta({ "titulo": titulo_votacion, "opciones": opciones, "voto_unico": voto_unico_votacion, "duracion_fechas": [fecha_actual, fecha_final] }).then(() => {
                     conseguir_datos_SUPABASE({ "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuestas => {
                         document.querySelector("#select-encuestas").innerHTML = generar_titulos_encuestas(encuestas, id_encuesta)

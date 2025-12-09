@@ -51,7 +51,7 @@ const conseguir_datos_SUPABASE = async ({ encuesta_id = null, tabla = NOMBRE_TAB
 
     const { data, error } = await query;
     if (error) {
-        console.log(
+        console.error(
             tabla === NOMBRE_TABLA_ENCUESTAS
                 ? "Error al recibir datos encuestas:"
                 : "Error al recibir votaciones encuestas:",
@@ -62,9 +62,9 @@ const conseguir_datos_SUPABASE = async ({ encuesta_id = null, tabla = NOMBRE_TAB
 
     if (tabla === NOMBRE_TABLA_ENCUESTAS) {
         if (!data || data.length === 0) {
-            console.log("No hay encuestas!")
+            console.error("No hay encuestas!")
         } else if (!data[0].opciones || data[0].opciones.length === 0) {
-            console.log("No hay opciones!")
+            console.error("No hay opciones!")
         }
     }
     return data

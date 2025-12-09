@@ -111,7 +111,7 @@ const conseguir_datos_SUPABASE = async ({ encuesta_id = null, tabla = "encuestas
 
     const { data, error } = await query;
     if (error) {
-        console.log("Error MANTENIMIENTO RECIBIR DATOS")
+        console.error("Error MANTENIMIENTO RECIBIR DATOS")
         return []
     }
     return data
