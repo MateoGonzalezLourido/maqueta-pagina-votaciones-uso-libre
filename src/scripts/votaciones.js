@@ -27,6 +27,7 @@ const $ID_PAGINA_DATOS_ANALIZAR_VOTACION = "pagina-datos-analizados-encuesta"
 const $MINI_ANALISIS_DATOS = "mini-analisis-opcion"
 const $id_select_encuestas = "select-encuestas"
 const PARTE_ID_BT_ANALIZAR_DATOS = "bt-analizar-datos-encuesta-"
+const PARTE_ID_ENCUESTA_TITULO = "opcion-select-encuesta-"
 //Textos
 const TEXTO_CONTADOR_VOTOS = "*Votos: "
 const TEXTO_VOTO_UNICO = "*voto único"
@@ -108,7 +109,7 @@ const generar_titulos_encuestas = (data = null, encuesta_id = -1) => {
         if (encuesta_id == encuesta.id_encuesta) {//poner una encuesta como principal (la que se seleccionó)
             principal = "selected"
         }
-        html += `<option value="${encuesta.titulo}" ${principal}>${encuesta.terminada ? "*" : ""}${encuesta.titulo}${encuesta.terminada ? TEXTO_ENCUESTA_ACABADA_SELECT : ""}</option>`
+        html += `<option id="${PARTE_ID_ENCUESTA_TITULO}${encuesta.id_encuesta}" value="${encuesta.titulo}" ${principal}>${encuesta.terminada ? "*" : ""}${encuesta.titulo}${encuesta.terminada ? TEXTO_ENCUESTA_ACABADA_SELECT : ""}</option>`
     })
     return html
 }
@@ -182,7 +183,6 @@ function mirar_opciones_votadas(votaciones) {
 }
 //ES EL "MAIN" O "CONTROLADOR" DE LAS ENCUESTAS 
 function generar_encuestas(data = null, encuesta_id = null, contador_votaciones = null, opciones_votadas = null) {
-    console.log(data, encuesta_id, contador_votaciones, opciones_votadas)
     const inicio_votacion_encontrada = data.find(x => x.id_encuesta == encuesta_id)
     let datos_anonimos = null
     let votacion_anonima = null
@@ -228,8 +228,8 @@ function generar_encuestas(data = null, encuesta_id = null, contador_votaciones 
     //evento cambio de encuesta
     if (document.querySelector(`#${$id_select_encuestas}`)) {
         document.querySelector(`#${$id_select_encuestas}`).addEventListener("change", (e) => {
-            const titulo_escogido = e.target.value
-            const encuesta_escogida = data(x => x.titulo == titulo_escogido)
+            const titulo_escogido = e.target.selectedOptions[0].id.replace(PARTE_ID_ENCUESTA_TITULO,"")
+            const encuesta_escogida = data.find(x => x.id_encuesta == titulo_escogido)
             //registro de votos: hacer un recuento de los datos separados por opcion
             conseguir_datos_SUPABASE({ "encuesta_id": encuesta_escogida.id_encuesta, "tabla": NOMBRE_TABLA_VOTACIONES }).then((votaciones) => {
                 let contador_votaciones = contador_votos(votaciones, encuesta_escogida.id_encuesta)
