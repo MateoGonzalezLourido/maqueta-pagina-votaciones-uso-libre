@@ -145,7 +145,8 @@ function recoger_datos() {
     const fecha_actual = new Date()
     const fecha_cambiada_inicio = new Date(datos_recogidos.duracion_fechas[0])
     const fecha_cambiada_fin = new Date(datos_recogidos.duracion_fechas[1])
-    if ((fecha_actual > fecha_cambiada_inicio) || (fecha_actual > fecha_cambiada_fin) || (fecha_cambiada_inicio >= fecha_cambiada_fin)) return ({ "error": true })
+    if ((fecha_actual >= fecha_cambiada_inicio) || (fecha_actual >= fecha_cambiada_fin) || (fecha_cambiada_inicio >= fecha_cambiada_fin)) return ({ "datos_recogidos": {}, "error": true })
+    console.log(datos_recogidos)
     datos_recogidos.republicar = document.querySelector("#input-republicar").checked
     datos_recogidos.mostrar_resultados_cerrada = document.querySelector("#input-mostrarresultados").checked
     datos_recogidos.voto_anonimo = document.querySelector("#input-anonimo").checked
@@ -180,16 +181,17 @@ function comprobar_actualizar_datos(id_encuesta, datos_guardados) {
         nuevos_datos_guardado.principal = datos.principal
     }
     //fechas inicio fin
+    console.log(datos)
     const fechas = datos.duracion_fechas
     if (datos_guardados.duracion_fechas[0] != fechas[0] || datos_guardados.duracion_fechas[1] != fechas[1]) {
-        console.log(datos_cambiar,fechas)
+        console.log(datos_cambiar, fechas)
 
         datos_cambiar.duracion_fechas = fechas
         console.log(datos_cambiar.duracion_fechas)
         nuevos_datos_guardado.duracion_fechas = fechas
     }
     //poner fechas por defecto
-    
+
     if (datos_guardados.republicar != datos.republicar) {
         datos_cambiar.republicar = datos.republicar
         nuevos_datos_guardado.republicar = datos.republicar
