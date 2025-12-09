@@ -138,23 +138,37 @@ function recoger_datos() {
     datos_recogidos.duracion_fechas = ["", ""]
     datos_recogidos.duracion_fechas[0] = document.querySelector("#input-fecha-inicio").value
     datos_recogidos.duracion_fechas[1] = document.querySelector("#input-fecha-fin").value
-
+    //fechas validas?
+    const fecha_actual = new Date()
+    const fecha_cambiada_inicio = new Date(datos_recogidos.duracion_fechas[0])
+    const fecha_cambiada_fin = new Date(datos_recogidos.duracion_fechas[1])
+    if ((fecha_actual > fecha_cambiada_inicio) || (fecha_actual > fecha_cambiada_fin) || (fecha_cambiada_inicio >= fecha_cambiada_fin)) return ({ "error": true })
     datos_recogidos.republicar = document.querySelector("#input-republicar").checked
     datos_recogidos.mostrar_resultados_cerrada = document.querySelector("#input-mostrarresultados").checked
     datos_recogidos.voto_anonimo = document.querySelector("#input-anonimo").checked
     datos_recogidos.datos_anonimos = document.querySelector("#input-datos_anonimos").checked
 
-    return datos_recogidos
+    return ({ "datos_recogidos": datos_recogidos, "error": false })
 }
 function comprobar_actualizar_datos(id_encuesta, datos_guardados) {
+    console.log("blablABLA", datos_guardados)
     let nuevos_datos_guardado = datos_guardados
-    const datos = recoger_datos()
+    const datos_recogidos = recoger_datos()
+    if (datos_recogidos.error) {
+        document.querySelector("#text-fechas-validas").style.display = "block"
+        return;
+    }
+    else {
+        document.querySelector("#text-fechas-validas").style.display = "none"
+    }
+    const datos = datos_recogidos.datos_recogidos
     const datos_cambiar = {}
     //meter datos para comparar
     if (datos_guardados.titulo != datos.titulo) {
         datos_cambiar.titulo = datos.titulo
         nuevos_datos_guardado.titulo = datos.titulo
     }
+    debugger;
     if (datos_guardados.opciones.toString() != datos.opciones.toString()) {
         datos_cambiar.opciones = datos.opciones
         nuevos_datos_guardado.opciones = datos.opciones
@@ -164,11 +178,11 @@ function comprobar_actualizar_datos(id_encuesta, datos_guardados) {
         nuevos_datos_guardado.principal = datos.principal
     }
     //fechas inicio fin
-    /*const fechas = [datos.duracion_fechas[0], datos.duracion_fechas[1]]
-    if (encuesta[0].duracion_fechas != datos.duracion_fechas){
+    const fechas = datos.duracion_fechas
+    if (datos_guardados.duracion_fechas[0] != fechas[0] || datos_guardados.duracion_fechas[1] != fechas[1]) {
         datos_cambiar.duracion_fechas = fechas
-        nuevos_datos_guardado.duracion_fechas = datos.duracion_fechas
-    }*/
+        nuevos_datos_guardado.duracion_fechas = fechas
+    }
 
     if (datos_guardados.republicar != datos.republicar) {
         datos_cambiar.republicar = datos.republicar
@@ -194,7 +208,16 @@ function comprobar_actualizar_datos(id_encuesta, datos_guardados) {
     //actualizar local
     if (Object.keys(datos_cambiar).length > 0) {
         window.sessionStorage.setItem("Ajustes_encuesta", JSON.stringify(nuevos_datos_guardado))
-        actualizar__encuesta(id_encuesta, datos_cambiar)
+        actualizar__encuesta(id_encuesta, datos_cambiar).then(() => {
+            document.querySelector("#app").insertAdjacentHTML("afterend", `
+                <div id="mensaje-datos-guardados-exito">
+                <span>Cambios realizados✅</span>
+                </div>
+                `)
+            setTimeout(() => {
+                document.querySelector("#mensaje-datos-guardados-exito").style.display = "none"
+            }, 1000)
+        })
     }
 }
 const Generar_configurador_encuesta = (id_encuesta) => {
@@ -226,7 +249,7 @@ const Generar_configurador_encuesta = (id_encuesta) => {
             const mostrarresultados = encuesta[0].mostrar_resultados_cerrada ? "checked" : ""
             const datosanonimos = encuesta[0].datos_anonimos ? "checked" : ""
             const votoanonimo = encuesta[0].voto_anonimo ? "checked" : ""
-
+            console.log(encuesta[0].duracion_fechas[0])
             document.querySelector("#cuerpo-cosas").innerHTML = `
         <div class="apartado">
             <h3>>Principales</h3>
@@ -258,7 +281,8 @@ const Generar_configurador_encuesta = (id_encuesta) => {
             <div>
                 <label for="input-fecha-fin">*Fecha fin</label>
                 <input type="datetime-local" id="input-fecha-fin"placeholder="dd/mm/yy" value="${encuesta[0].duracion_fechas[1]}">
-            </div>
+            </div>      
+            <div id="text-fechas-validas" style="display:none;color:red">*Introduce fechas válidas</div>
             <div>
                 <label for="input-republicar">*Republicar
                     <input type="checkbox" id="input-republicar"${republicar}>
@@ -312,6 +336,7 @@ const Generar_configurador_encuesta = (id_encuesta) => {
                         if (menu) menu.remove()
                         if (res) {//pedir los datos
                             let datos_guardados = JSON.parse(window.sessionStorage.getItem("Ajustes_encuesta"))
+                            console.log(datos_guardados)
                             if (datos_guardados != null && datos_guardados.id_encuesta != id_encuesta) {
                                 conseguir_datos_SUPABASE({ "encuesta_id": id_encuesta, "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuesta => {
                                     comprobar_actualizar_datos(encuesta)
