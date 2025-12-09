@@ -1,5 +1,7 @@
 import { supabase } from '../supabase/supabase'
-
+/*ESTO ES UN PARCHE AL NO TENER MANTENIMIENTO ACTIVO EN EL SERVIDOR
+NO SERA 100% PRECISO EN LAS FECHAS YA QUE ESTO SE EJECUTA CUANDO UN USUARIO SE CONECTA A LA PÁGINA, POR LO QUE UNA ENCUESTA QUE ESTA HECHA PARA LUNES-VIERNES SI SE TERMINA Y EL PRIMERO SE METE EL MARTES LAS FECHAS SE MOVERÍAN A MARTES-SÁBADO, SI ESTO NO ES TAN IMPORTANTE O ES UNA PÁGINA MUY VISITADA DIARIAMENTE ESTE PROBLEMA DESAPARECERÍA.
+*/
 export async function MANTENIMIENTO_BASE_DATOS() {
     const votaciones = await conseguir_datos_SUPABASE({});
     // 1. Finalizar votaciones caducadas
@@ -15,15 +17,29 @@ export async function MANTENIMIENTO_BASE_DATOS() {
             // esperar actualización
             await actualizar__encuesta(vt.id_encuesta, {
                 terminada: true,
-                fecha_terminada: fecha
+                fecha_terminada: fecha,
+                principal: false
             });
 
             if (vt.republicar) {
+                //replicar fechas pero moviendolas para la fecha actual (las horas no cambian, se replican las mismas que se usaron)
+                const fecha_actual = new Date()
+                const fecha_inicio_usada = new Date(vt.duracion_fechas[0])
+                const fecha_fin_usada = new Date(vt.duracion_fechas[1])
+                const diferencia_fechas = fecha_fin_usada - fecha_inicio_usada
+
+                fecha_actual.setHours(fecha_inicio_usada.getHours(), fecha_inicio_usada.getMinutes(), fecha_inicio_usada.getSeconds(), fecha_inicio_usada.getMilliseconds());
+
+
+                const fecha_fin_cambiar = new Date(fecha_actual.getTime() + diferencia_fechas)
+
+                let fechas_establecidas = [fecha_actual.toISOString(), fecha_fin_cambiar.toISOString()]
+
                 await añadir_encuesta({
                     titulo: vt.titulo,
                     opciones: vt.opciones,
                     principal: vt.principal,
-                    duracion_fechas: vt.duracion_fechas,
+                    duracion_fechas: fechas_establecidas,
                     republicar: vt.republicar,
                     voto_unico: vt.voto_unico,
                     terminada: false,

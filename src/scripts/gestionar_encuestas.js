@@ -13,6 +13,7 @@ const MENSAJE_ACCESO_CORRECTO = "*Acceso <ROLE> ADMIN correcto"
 const URL_IMG_AÑADIR_ENCUESTA = "/añadir.png"
 const $id_select_encuestas = "select-encuestas"
 const $pagina_datos_analizados_encuesta = "admin-pagina-datos-analizados-encuesta"
+const PARTE_ID_ENCUESTA_TITULO = "opcion-select-encuesta-"
 //Valores por defecto 
 const VALOR_DEFECTO_NOMBRE_USUARIO = "anónimo"
 //supabse datos
@@ -81,7 +82,7 @@ const actualizar__encuesta = async (id_encuesta, datos_cambiar) => {
 }
 // TODO: algo pendiente
 function verificar_acceso_admin(entrada) {//132546781535
-    if (entrada = 1) {
+    if (entrada == 1) {
         return true
     }
     return false
@@ -94,7 +95,7 @@ const generar_titulos_encuestas = (data, encuesta_id) => {
         if (encuesta_id == encuesta.id_encuesta) {//poner una encuesta como principal (la que se seleccionó)
             principal = "selected"
         }
-        html += `<option value="${encuesta.titulo}" ${principal}>${encuesta.terminada ? "*" : ""}${encuesta.titulo}${encuesta.terminada ? TEXTO_ENCUESTA_ACABADA_SELECT : ""}</option>`
+        html += `<option id="${PARTE_ID_ENCUESTA_TITULO}${encuesta.id_encuesta}" value="${encuesta.titulo}" ${principal}>${encuesta.terminada ? "*" : ""}${encuesta.titulo}${encuesta.terminada ? TEXTO_ENCUESTA_ACABADA_SELECT : ""}</option>`
     })
     return html
 }
@@ -151,7 +152,6 @@ function recoger_datos() {
     return ({ "datos_recogidos": datos_recogidos, "error": false })
 }
 function comprobar_actualizar_datos(id_encuesta, datos_guardados) {
-    console.log("blablABLA", datos_guardados)
     let nuevos_datos_guardado = datos_guardados
     const datos_recogidos = recoger_datos()
     if (datos_recogidos.error) {
@@ -220,8 +220,8 @@ function comprobar_actualizar_datos(id_encuesta, datos_guardados) {
         })
     }
 }
-const Generar_configurador_encuesta = (id_encuesta) => {
-    conseguir_datos_SUPABASE({ "encuesta_id": id_encuesta, "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuesta => {
+const Generar_configurador_encuesta = (encuesta_id) => {
+    conseguir_datos_SUPABASE({ "encuesta_id": encuesta_id, "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuesta => {
         if (encuesta[0].terminada) {
             document.querySelector("#cuerpo-cosas").innerHTML = `<div class="alineador-bt-abrir-encuesta">
             <button id="bt-abrir-encuesta">Reabrir Votacion</button>
@@ -232,8 +232,8 @@ const Generar_configurador_encuesta = (id_encuesta) => {
                     const menu = document.querySelector("#bloqueo-interacciones-menu-contexto");
                     if (menu) menu.remove()
                     if (res) {
-                        actualizar__encuesta(id_encuesta, { "terminada": false, "fecha_terminada": null }).then(() => {
-                            Generar_configurador_encuesta(id_encuesta)
+                        actualizar__encuesta(encuesta_id, { "terminada": false, "fecha_terminada": null }).then(() => {
+                            Generar_configurador_encuesta(encuesta_id)
                         })
                     }
                 })
@@ -249,7 +249,6 @@ const Generar_configurador_encuesta = (id_encuesta) => {
             const mostrarresultados = encuesta[0].mostrar_resultados_cerrada ? "checked" : ""
             const datosanonimos = encuesta[0].datos_anonimos ? "checked" : ""
             const votoanonimo = encuesta[0].voto_anonimo ? "checked" : ""
-            console.log(encuesta[0].duracion_fechas[0])
             document.querySelector("#cuerpo-cosas").innerHTML = `
         <div class="apartado">
             <h3>>Principales</h3>
@@ -321,7 +320,7 @@ const Generar_configurador_encuesta = (id_encuesta) => {
                         const menu = document.querySelector("#bloqueo-interacciones-menu-contexto");
                         if (menu) menu.remove()
                         if (res) {
-                            reiniciar_ajustes_anteriores(id_encuesta)
+                            reiniciar_ajustes_anteriores(encuesta_id)
                         }
                     })
 
@@ -337,14 +336,14 @@ const Generar_configurador_encuesta = (id_encuesta) => {
                         if (res) {//pedir los datos
                             let datos_guardados = JSON.parse(window.sessionStorage.getItem("Ajustes_encuesta"))
                             console.log(datos_guardados)
-                            if (datos_guardados != null && datos_guardados.id_encuesta != id_encuesta) {
-                                conseguir_datos_SUPABASE({ "encuesta_id": id_encuesta, "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuesta => {
+                            if (datos_guardados != null && datos_guardados.id_encuesta != encuesta_id) {
+                                conseguir_datos_SUPABASE({ "encuesta_id": encuesta_id, "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuesta => {
                                     comprobar_actualizar_datos(encuesta)
 
                                 })
                             }
                             else {//usar datos ya existentes
-                                comprobar_actualizar_datos(id_encuesta, datos_guardados)
+                                comprobar_actualizar_datos(encuesta_id, datos_guardados)
                             }
                         }
                     })
@@ -362,8 +361,8 @@ const Generar_configurador_encuesta = (id_encuesta) => {
                             const fecha_hora_actual = new Date()
                             const fecha = `${fecha_hora_actual.getFullYear()}-${String(fecha_hora_actual.getMonth() + 1).padStart(2, '0')}-${String(fecha_hora_actual.getDate()).padStart(2, '0')}`;
 
-                            actualizar__encuesta(id_encuesta, { "terminada": true, "fecha_terminada": fecha.toString() }).then(() => {
-                                Generar_configurador_encuesta(id_encuesta)
+                            actualizar__encuesta(encuesta_id, { "terminada": true, "fecha_terminada": fecha.toString() }).then(() => {
+                                Generar_configurador_encuesta(encuesta_id)
                             })
                         }
                     })
@@ -560,9 +559,8 @@ const Generar_cuerpo_configurador_votacion = (data, id_encuesta, opcion) => {
     })
     //evento cambio de encuesta
     document.querySelector(`#${$id_select_encuestas}`).addEventListener("change", (e) => {
-        const titulo_escogido = e.target.value
-        const encuesta_escogida = data.find(x => x.titulo == titulo_escogido)
-        Generar_cuerpo_configurador_votacion(data, encuesta_escogida, 1)
+        const titulo_escogido = e.target.selectedOptions[0].id.replace(PARTE_ID_ENCUESTA_TITULO, "")
+        Generar_cuerpo_configurador_votacion(data, titulo_escogido, 1)
     })
     //salir pagina principal
     document.querySelector("#bt-volver-home").addEventListener("click", () => {
@@ -609,10 +607,10 @@ const Generar_cuerpo_configurador_votacion = (data, id_encuesta, opcion) => {
             const voto_unico_votacion = document.querySelector("#input-voto-unico-crear-votacion").checked
             if (titulo_votacion.length > 0 && opciones.length > 0 && (voto_unico_votacion == false || voto_unico_votacion == true)) {
                 //crear votacionw
-                console.log({ "titulo": titulo_votacion, "opciones": opciones, "voto_unico": voto_unico_votacion })
                 añadir_encuesta({ "titulo": titulo_votacion, "opciones": opciones, "voto_unico": voto_unico_votacion }).then(() => {
                     conseguir_datos_SUPABASE({ "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuestas => {
                         document.querySelector("#select-encuestas").innerHTML = generar_titulos_encuestas(encuestas, id_encuesta)
+                        document.querySelector("#bloqueador-acciones-crear-votacion").remove()
                     })
 
                 })
@@ -651,12 +649,11 @@ globalThis.addEventListener("DOMContentLoaded", () => {
                         conseguir_datos_SUPABASE({}).then(data => {
                             //escoger una encuesta como principal(si hay solo una principal esa es, sino se coge la primera que llegue)
                             //esto se hace solo al inicio, luego solo se pone la que se seleccione
-                            let encuesta_id = data.find(x => x.principal == true)
-                            if (!encuesta_id) {
-                                encuesta_id = data[0].id_encuesta
-                            }
+                            let encuesta_id = data.find(x => x.principal && !x.terminada == true);
+                            if (encuesta_id) encuesta_id = encuesta_id.id_encuesta;
                             else {
-                                encuesta_id = encuesta_id.id_encuesta
+                                encuesta_id = data.find(x => x.principal == true);
+                                encuesta_id = encuesta_id ? encuesta_id.id_encuesta : data[0]?.id_encuesta ?? null;
                             }
                             document.querySelector("#app").innerHTML = `
                             <div><span id="${ID_BT_VOLVER_HOME}"><-HOME-></span></div>

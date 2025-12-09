@@ -104,7 +104,10 @@ const añadir_votacion_encuesta = async ({ id_nombre, id_encuesta, opcion_votada
 const generar_titulos_encuestas = (data = null, encuesta_id = -1) => {
     if (data == null) return ``
     let html = ``
+    const fecha_actual = new Date()
     data.forEach(encuesta => {
+        const fecha_inicio = new Date(encuesta.duracion_fechas[0])
+        if (fecha_inicio > fecha_actual) return;
         let principal = ""
         if (encuesta_id == encuesta.id_encuesta) {//poner una encuesta como principal (la que se seleccionó)
             principal = "selected"
@@ -228,7 +231,7 @@ function generar_encuestas(data = null, encuesta_id = null, contador_votaciones 
     //evento cambio de encuesta
     if (document.querySelector(`#${$id_select_encuestas}`)) {
         document.querySelector(`#${$id_select_encuestas}`).addEventListener("change", (e) => {
-            const titulo_escogido = e.target.selectedOptions[0].id.replace(PARTE_ID_ENCUESTA_TITULO,"")
+            const titulo_escogido = e.target.selectedOptions[0].id.replace(PARTE_ID_ENCUESTA_TITULO, "")
             const encuesta_escogida = data.find(x => x.id_encuesta == titulo_escogido)
             //registro de votos: hacer un recuento de los datos separados por opcion
             conseguir_datos_SUPABASE({ "encuesta_id": encuesta_escogida.id_encuesta, "tabla": NOMBRE_TABLA_VOTACIONES }).then((votaciones) => {
