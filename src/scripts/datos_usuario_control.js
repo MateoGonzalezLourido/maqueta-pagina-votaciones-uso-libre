@@ -1,15 +1,11 @@
-/*VARIABLES GLOBALES PARA MEJORAR LA ACCESIBILIDAD DE LOS CAMBIOS */
+/*variables globales*/
+import { NAME_DT_LOC_BONO_VARIABLE, NAME_DT_LOC_NOMBRE_VARIABLE, VALOR_DEFECTO_NOMBRE_USUARIO, VALOR_DEFECTO_BONO_USUARIO } from '../config.js'
+/*variables del fichero */
 //IDs o partes
 const $ID_BT_USUARIO = "bt-usuario"
 const $ID_MENU_USUARIO = "menu-usuario"
 const $ID_INPUT_NOMBRE_USUARIO = "input-nombre-usuario"
 const $ID_INPUT_BONO_USUARIO = "input-bono-usuario"
-//nombre variables localstorage
-const NAME_DT_LOC_BONO_VARIABLE = "bono_variable"
-const NAME_DT_LOC_NOMBRE_VARIABLE = "nombre_variable"
-//valores por defecto
-const VALOR_DEFECTO_NOMBRE_USUARIO = "anónimo"
-const VALOR_DEFECTO_BONO_USUARIO = "false"
 //clases
 const CLASS_CERRAR_MENU = "cerrado"
 const CLASS_ABRIR_MENU = "abierto"
@@ -79,8 +75,8 @@ function actualizar_nombre() {
 }
 
 function actualizar_bono() {
-    const valor_repuesto = !(window.localStorage.getItem(NAME_DT_LOC_BONO_VARIABLE) )? VALOR_DEFECTO_BONO_USUARIO : window.localStorage.getItem(NAME_DT_LOC_BONO_VARIABLE)
-    const valor = $bono_usuario.checked==true ? "true" :"false"
+    const valor_repuesto = !(window.localStorage.getItem(NAME_DT_LOC_BONO_VARIABLE)) ? VALOR_DEFECTO_BONO_USUARIO : window.localStorage.getItem(NAME_DT_LOC_BONO_VARIABLE)
+    const valor = $bono_usuario.checked == true ? "true" : "false"
     //parchear
     try {//intentar actualizar
         window.localStorage.setItem(NAME_DT_LOC_BONO_VARIABLE, valor)

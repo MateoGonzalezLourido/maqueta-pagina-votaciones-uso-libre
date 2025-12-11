@@ -1,12 +1,9 @@
 /*Importar cosas necesarias para el codigo */
 import { getBrowserFingerprint } from './datos_usuario_control.js'
 import { MANTENIMIENTO_BASE_DATOS } from './mantenimiento_servidor.js'
-
-/*ALGUNAS VARIABLES O FUNCIONES PARA HACERLAS MAS ACCESIBLES */
-//nombres bvariables localstorage
-const NAME_DT_LOC_BONO_VARIABLE = "bono_variable"
-const NAME_DT_LOC_NOMBRE_VARIABLE = "nombre_variable"
-const NAME_DT_LOC_VOTACIONES = "votaciones"
+/*VARIABLES globales*/
+import { VALOR_DEFECTO_NOMBRE_USUARIO, URL_CHECKED_IMG, NAME_DT_LOC_VOTACIONES, NAME_DT_LOC_BONO_VARIABLE, NAME_DT_LOC_NOMBRE_VARIABLE, $id_select_encuestas, PARTE_ID_ENCUESTA_TITULO } from '../config.js'
+/*variables del fichero */
 //clases(para animaciones o queryselector)
 const CLASS_CHECKED_CHECKBOX_VOTO = "checked"
 const CLASS_SEMIDESAPARECER_CHECKBOX_VOTO = "semi-desaparecer"
@@ -24,19 +21,14 @@ const PARTE_ID_REMPLAZAR_IMG_CHECK = "img-check-votado-"
 const PARTE_ID_CONTADOR_VOTANTES = "numero-votantes-bt-lista-"
 const $ID_PAGINA_DATOS_ANALIZAR_VOTACION = "pagina-datos-analizados-encuesta"
 const $MINI_ANALISIS_DATOS = "mini-analisis-opcion"
-const $id_select_encuestas = "select-encuestas"
 const PARTE_ID_BT_ANALIZAR_DATOS = "bt-analizar-datos-encuesta-"
-const PARTE_ID_ENCUESTA_TITULO = "opcion-select-encuesta-"
 //Textos
 const TEXTO_CONTADOR_VOTOS = "*Votos: "
 const TEXTO_VOTO_UNICO = "*voto único"
 const TEXTO_VOTO_MULTIPLE = "*voto múltiple"
 const TEXTO_ANALIZAR_DATOS_BT = "Analizar Datos"
 const TEXTO_ENCUESTA_ACABADA_SELECT = " (Resultados)"
-//Valores por defecto 
-const VALOR_DEFECTO_NOMBRE_USUARIO = "anónimo"
 //URLs
-const URL_CHECKED_IMG = "/checked.svg"
 
 /*FUNCIONES DE SUPABASE */
 import { conseguir_datos_SUPABASE, borrar_voto_SUPABASE, añadir_voto_SUPABASE } from '../supabase/funciones.js'

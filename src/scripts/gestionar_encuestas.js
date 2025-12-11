@@ -1,4 +1,6 @@
-/*VARIABLES */
+/*VARIABLES globales*/
+import { VALOR_DEFECTO_NOMBRE_USUARIO, URL_IMG_AÑADIR_ENCUESTA, $id_select_encuestas, PARTE_ID_ENCUESTA_TITULO } from '../config.js'
+/*Varables del archivo */
 const ID_BT_ABRIR_PAGINA_ADMIN = "bt-abrir-menu-log-admin"
 const ID_BT_AÑADIR_ENCUESTA = "bt-añadir-encuesta"
 const ID_BT_VOLVER_HOME = "bt-volver-home"
@@ -7,19 +9,10 @@ const ID_INPUT_KEY_ADMIN = "input-password-admin"
 const CLASS_MOSTRAR_MENU = "mostrar-menu-log"
 const CLASS_QUITAR_MENU = "quitar-menu-log"
 const MENSAJE_ACCESO_CORRECTO = "*Acceso <ROLE> ADMIN correcto"
-const URL_IMG_AÑADIR_ENCUESTA = "/añadir.png"
-const $id_select_encuestas = "select-encuestas"
 const $pagina_datos_analizados_encuesta = "admin-pagina-datos-analizados-encuesta"
-const PARTE_ID_ENCUESTA_TITULO = "opcion-select-encuesta-"
-//Valores por defecto 
-const VALOR_DEFECTO_NOMBRE_USUARIO = "anónimo"
-//supabse datos
-const NOMBRE_TABLA_ENCUESTAS = "encuestas"
-const NOMBRE_TABLA_VOTACIONES = "encuestas_votaciones"
-const NOMBRE_TABLA_DEFECTO_USAR = NOMBRE_TABLA_ENCUESTAS
 //textos
 const TEXTO_ENCUESTA_ACABADA_SELECT = " (cerrada)"
-//funciones de SUPABASE
+/*funciones de SUPABASE*/
 import { conseguir_datos_SUPABASE, añadir_votacion_SUPABASE, actualizar_votacion_SUPABASE } from '../supabase/funciones.js'
 /*ACTUALMENTE ESTA ADMIN KEY ESTA PUBLICA */
 // TODO: algo pendiente
