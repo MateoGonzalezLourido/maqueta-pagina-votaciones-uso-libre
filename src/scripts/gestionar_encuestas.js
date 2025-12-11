@@ -1,5 +1,5 @@
 /*VARIABLES globales*/
-import { VALOR_DEFECTO_NOMBRE_USUARIO, URL_IMG_AÑADIR_ENCUESTA, $id_select_encuestas, PARTE_ID_ENCUESTA_TITULO } from '../config.js'
+import { VALOR_DEFECTO_NOMBRE_USUARIO, URL_IMG_AÑADIR_ENCUESTA, $id_select_encuestas, PARTE_ID_ENCUESTA_TITULO, NAME_AJUSTES_ENCUESTA } from '../config.js'
 /*Varables del archivo */
 const ID_BT_ABRIR_PAGINA_ADMIN = "bt-abrir-menu-log-admin"
 const ID_BT_AÑADIR_ENCUESTA = "bt-añadir-encuesta"
@@ -16,21 +16,18 @@ const TEXTO_ENCUESTA_ACABADA_SELECT = " (cerrada)"
 import { conseguir_datos_SUPABASE, añadir_votacion_SUPABASE, actualizar_votacion_SUPABASE } from '../supabase/funciones.js'
 /*ACTUALMENTE ESTA ADMIN KEY ESTA PUBLICA */
 // TODO: algo pendiente
-function verificar_acceso_admin(entrada) {//132546781535
-    if (entrada == import.meta.env.VITE_ADMIN_KEY
-    ) {
+function verificar_acceso_admin(entrada) {
+    const key = import.meta.env.VITE_ADMIN_KEY
+    if ((entrada * 6) == key) {//el *6 esta hecho para que asi no llegue con simplemente ver el import arriba de todo y tengan que buscar por el código esta función
         return true
     }
     return false
 }
-
 const generar_titulos_encuestas = (data, encuesta_id) => {
     let html = ``
     data.forEach(encuesta => {
-        let principal = ""
-        if (encuesta_id == encuesta.id_encuesta) {//poner una encuesta como principal (la que se seleccionó)
-            principal = "selected"
-        }
+        //poner una encuesta como principal (la que se seleccionó)
+        let principal = encuesta_id == encuesta.id_encuesta ? "selected" : ""
         html += `<option id="${PARTE_ID_ENCUESTA_TITULO}${encuesta.id_encuesta}" value="${encuesta.titulo}" ${principal}>${encuesta.terminada ? "*" : ""}${encuesta.titulo}${encuesta.terminada ? TEXTO_ENCUESTA_ACABADA_SELECT : ""}</option>`
     })
     return html
@@ -141,7 +138,7 @@ function comprobar_actualizar_datos(id_encuesta, datos_guardados) {
     //actualizar base de datos(si hay algun cambio)
     //actualizar local
     if (Object.keys(datos_cambiar).length > 0) {
-        window.sessionStorage.setItem("Ajustes_encuesta", JSON.stringify(nuevos_datos_guardado))
+        window.sessionStorage.setItem(NAME_AJUSTES_ENCUESTA, JSON.stringify(nuevos_datos_guardado))
         actualizar_votacion_SUPABASE({ id_encuesta: id_encuesta, datos_cambiar: datos_cambiar }).then(() => {
             document.querySelector("#app").insertAdjacentHTML("afterend", `
                 <div id="mensaje-datos-guardados-exito">
@@ -179,7 +176,7 @@ const Generar_configurador_encuesta = (encuesta_id) => {
         }
         else {
             //guardar datos en local
-            window.sessionStorage.setItem("Ajustes_encuesta", JSON.stringify(encuesta[0]))
+            window.sessionStorage.setItem(NAME_AJUSTES_ENCUESTA, JSON.stringify(encuesta[0]))
             const principal = encuesta[0].principal ? "checked" : ""
             const republicar = encuesta[0].republicar ? "checked" : ""
             const votounico = encuesta[0].voto_unico ? "checked" : ""
@@ -288,7 +285,7 @@ const Generar_configurador_encuesta = (encuesta_id) => {
                         const menu = document.querySelector("#bloqueo-interacciones-menu-contexto");
                         if (menu) menu.remove()
                         if (res) {//pedir los datos
-                            let datos_guardados = JSON.parse(window.sessionStorage.getItem("Ajustes_encuesta"))
+                            let datos_guardados = JSON.parse(window.sessionStorage.getItem(NAME_AJUSTES_ENCUESTA))
                             if (datos_guardados != null && datos_guardados.id_encuesta != encuesta_id) {
                                 conseguir_datos_SUPABASE({ encuesta_id: encuesta_id, tabla: "encuestas", datos_recibir: ["titulo", "opciones", "principal", "duracion_fechas", "republicar", "voto_unico", "mostrar_resultados_cerrada", "datos_anonimos", "voto_anonimo"] }).then(encuesta => {
                                     comprobar_actualizar_datos(encuesta_id, encuesta)

@@ -10,6 +10,7 @@ export const URL_IMG_AÑADIR_ENCUESTA = "/añadir.png"
 export const NAME_DT_LOC_BONO_VARIABLE = "bono_variable"
 export const NAME_DT_LOC_NOMBRE_VARIABLE = "nombre_variable"
 export const NAME_DT_LOC_VOTACIONES = "votaciones"
+export const NAME_AJUSTES_ENCUESTA ="Ajustes_encuesta"
 //partes id
 export const $id_select_encuestas = "select-encuestas"
 export const PARTE_ID_ENCUESTA_TITULO = "opcion-select-encuesta-"
