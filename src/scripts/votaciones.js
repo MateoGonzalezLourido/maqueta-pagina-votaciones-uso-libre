@@ -141,16 +141,16 @@ function generar_encuestas(data = null, encuesta_id = null, contador_votaciones 
         const datos_anonimos = data.datos_anonimos
         const votacion_anonima = data.voto_anonimo
         let voto_unico = data.find(x => x.id_encuesta == encuesta_id)
-        voto_unico = voto_unico.voto_unico ? TEXTO_VOTO_UNICO : TEXTO_VOTO_MULTIPLE
+        if (voto_unico) voto_unico = voto_unico.voto_unico ? TEXTO_VOTO_UNICO : TEXTO_VOTO_MULTIPLE
         let caracteristicas_votacion = ""
-        if (datos_anonimos) caracteristicas_votacion += "<span   class='tipo-voto'>*resultados privados</span>"
+        if (datos_anonimos) caracteristicas_votacion += "<span class='tipo-voto'>*resultados privados</span>"
         if (votacion_anonima) caracteristicas_votacion += "<span class='tipo-voto'>*voto anónimo</span>"
         document.querySelector("#main").innerHTML = `
         <select id="${$id_select_encuestas}">
         ${generar_titulos_encuestas(data, encuesta_id)}
         </select>
         <div class="div-juntar-todo-cuerpo-opciones">
-        <span class="tipo-voto">${voto_unico}</span>
+        <span class="tipo-voto">${voto_unico ? voto_unico : ""}</span>
         ${caracteristicas_votacion}
         <section class="cuerpo-opciones">
         ${generar_opciones_encuestas(data, encuesta_id, contador_votaciones, opciones_votadas)}

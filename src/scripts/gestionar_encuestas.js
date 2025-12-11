@@ -74,7 +74,7 @@ function recoger_datos() {
     const fecha_actual = new Date()
     const fecha_cambiada_inicio = new Date(datos_recogidos.duracion_fechas[0])
     const fecha_cambiada_fin = new Date(datos_recogidos.duracion_fechas[1])
-    if ((fecha_actual >= fecha_cambiada_inicio) || (fecha_actual >= fecha_cambiada_fin) || (fecha_cambiada_inicio >= fecha_cambiada_fin)) return ({ "datos_recogidos": {}, "error": true })
+    if ((fecha_actual >= fecha_cambiada_fin) || (fecha_cambiada_inicio >= fecha_cambiada_fin)) return ({ "datos_recogidos": {}, "error": true })
     datos_recogidos.republicar = document.querySelector("#input-republicar").checked
     datos_recogidos.mostrar_resultados_cerrada = document.querySelector("#input-mostrarresultados").checked
     datos_recogidos.voto_anonimo = document.querySelector("#input-anonimo").checked
@@ -165,7 +165,7 @@ const Generar_configurador_encuesta = (encuesta_id) => {
                     const menu = document.querySelector("#bloqueo-interacciones-menu-contexto");
                     if (menu) menu.remove()
                     if (res) {
-                        actualizar_votacion_SUPABASE({ encuesta_id: encuesta_id, datos_cambiar: { "terminada": false, "fecha_terminada": null } }).then(() => {
+                        actualizar_votacion_SUPABASE({ id_encuesta: encuesta_id, datos_cambiar: { "terminada": false, "fecha_terminada": null } }).then(() => {
                             //actualizar pantalla
                             Generar_configurador_encuesta(encuesta_id)
                         })
