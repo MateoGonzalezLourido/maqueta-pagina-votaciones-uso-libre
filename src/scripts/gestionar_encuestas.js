@@ -8,7 +8,7 @@ const ID_MENU_ADMIN = "menu-log-gestionador-encuestas"
 const ID_INPUT_KEY_ADMIN = "input-password-admin"
 const CLASS_MOSTRAR_MENU = "mostrar-menu-log"
 const CLASS_QUITAR_MENU = "quitar-menu-log"
-const MENSAJE_ACCESO_CORRECTO = "*Acceso <ROLE> ADMIN correcto"
+const MENSAJE_ACCESO_CORRECTO = "*Acceso <ROL> ADMIN correcto"
 const $pagina_datos_analizados_encuesta = "admin-pagina-datos-analizados-encuesta"
 //textos
 const TEXTO_ENCUESTA_ACABADA_SELECT = " (cerrada)"
@@ -287,7 +287,7 @@ const Generar_configurador_encuesta = (encuesta_id) => {
                         if (res) {//pedir los datos
                             let datos_guardados = JSON.parse(window.sessionStorage.getItem(NAME_AJUSTES_ENCUESTA))
                             if (datos_guardados != null && datos_guardados.id_encuesta != encuesta_id) {
-                                conseguir_datos_SUPABASE({ encuesta_id: encuesta_id, tabla: "encuestas", datos_recibir: ["titulo", "opciones", "principal", "duracion_fechas", "republicar", "voto_unico", "mostrar_resultados_cerrada", "datos_anonimos", "voto_anonimo"] }).then(encuesta => {
+                                conseguir_datos_SUPABASE({ encuesta_id: encuesta_id, tabla: "encuestas", datos_recibir: ["titulo", "opciones", "principal", "duracion_fechas", "republicar", "voto_unico", "mostrar_resultados_cerrada", "datos_anonimos", "voto_anonimo"] }).then(([encuesta]) => {
                                     comprobar_actualizar_datos(encuesta_id, encuesta)
                                 })
                             }
@@ -608,7 +608,7 @@ globalThis.addEventListener("DOMContentLoaded", () => {
                 if (e.key === "Enter") {
                     const entrada_key_log = (document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).value.replace(/[.\\/;,!#{}%&$"'*]/g, " ").trim()).toString()
                     if (verificar_acceso_admin(entrada_key_log)) {
-                        console.log(MENSAJE_ACCESO_CORRECTO)
+                        console.log(`%c${MENSAJE_ACCESO_CORRECTO}`, "color: green; font-weight: bold;");
                         //poner una como principal
                         conseguir_datos_SUPABASE({ tabla: "encuestas" }).then(data => {
                             //escoger una encuesta como principal(si hay solo una principal esa es, sino se coge la primera que llegue)

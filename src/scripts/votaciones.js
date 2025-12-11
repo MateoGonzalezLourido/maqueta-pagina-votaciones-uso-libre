@@ -170,7 +170,7 @@ function generar_encuestas(data = null, encuesta_id = null, contador_votaciones 
             const titulo_escogido = e.target.selectedOptions[0].id.replace(PARTE_ID_ENCUESTA_TITULO, "")
             const encuesta_escogida = data.find(x => x.id_encuesta == titulo_escogido)
             //registro de votos: hacer un recuento de los datos separados por opcion
-            conseguir_datos_SUPABASE({ encuesta_id: encuesta_escogida.id_encuesta, tabla: "votaciones", datos_recibir: ["id_nombre", "id_encuesta", "opcion_votada_encuesta", ...(voto_anonimo || datos_anonimos ? [] : ["nombre_votante"]), "bono_votante"] }).then((votaciones) => {
+            conseguir_datos_SUPABASE({ encuesta_id: encuesta_escogida.id_encuesta, tabla: "votaciones", datos_recibir: ["id_encuesta", "id_nombre", "id_encuesta", "opcion_votada_encuesta", ...(votacion_anonima || datos_anonimos ? [] : ["nombre_votante"]), "bono_votante"] }).then((votaciones) => {
                 let contador_votaciones = contador_votos(votaciones)
                 let opciones_votadas = mirar_opciones_votadas(votaciones)
                 //crear datos guardado de las votaciones de la encuesta para reducir solicitudes a la base de datos
@@ -483,15 +483,19 @@ function generar_encuestas(data = null, encuesta_id = null, contador_votaciones 
 globalThis.addEventListener("DOMContentLoaded", () => {
     MANTENIMIENTO_BASE_DATOS()
         .then(() => {
-            return conseguir_datos_SUPABASE({ tabla: "encuestas", datos_recibir: ["titulo", "opciones", "principal", "duracion_fechas", "voto_unico", "terminada", "mostrar_resultados_cerrada", "datos_anonimos", "voto_anonimo"] });
+            return conseguir_datos_SUPABASE({ tabla: "encuestas", datos_recibir: ["id_encuesta", "titulo", "opciones", "principal", "duracion_fechas", "voto_unico", "terminada", "mostrar_resultados_cerrada", "datos_anonimos", "voto_anonimo"] });
         })
         .then((data) => {
             const fecha_actual = new Date()
-            let encuesta_id = data.find(x => x.principal && !(x.terminada) && (fecha_actual < new Date(x.duracion_fechas[0])));
+            let encuesta_id = data.find(x => x.principal && !x.terminada && fecha_actual >= new Date(x.duracion_fechas[0]))
             if (encuesta_id) encuesta_id = encuesta_id.id_encuesta;
             else {
-                encuesta_id = data.find(x => x.principal && (fecha_actual < new Date(x.duracion_fechas[0])));
-                encuesta_id = encuesta_id ? encuesta_id.id_encuesta : null;
+                encuesta_id = data.find(x => x.principal && (fecha_actual >= new Date(x.duracion_fechas[0])));
+                if (!encuesta_id) encuesta_id = data.find(x => !x.terminada && (fecha_actual >= new Date(x.duracion_fechas[0])));
+                if (!encuesta_id) encuesta_id = data.find(x => x.terminada);
+
+                encuesta_id = encuesta_id?.id_encuesta ?? null;
+
             }
             if (encuesta_id == null) {
                 alert("NO HAY VOTACIONES disponibles")

@@ -39,7 +39,7 @@ export const conseguir_datos_SUPABASE = async ({ encuesta_id = null, tabla = NOM
     if (tabla === NOMBRE_TABLA_ENCUESTAS && !mantenimiento) {
         if (!data || data.length === 0) {
             console.error("No hay encuestas!")
-        } else if (!data[0].opciones || data[0].opciones.length === 0) {
+        } else if (data[0].opciones && data[0].opciones.length === 0) {
             console.error("No hay opciones!")
         }
     }
