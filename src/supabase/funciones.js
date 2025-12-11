@@ -1,11 +1,12 @@
 //importar supabase
-import { supabase } from '../supabase/supabase'
+import { supabase } from '../supabase/supabase.js'
 //supabase datos
 const NOMBRE_TABLA_ENCUESTAS = "encuestas"
 const NOMBRE_TABLA_VOTACIONES = "encuestas_votaciones"
 const NOMBRE_TABLA_DEFECTO_USAR = NOMBRE_TABLA_ENCUESTAS
 //textos
 const TEXTO_MANTENIMIENTO = "(MANTENIMIENTO)"
+const ERROR_FALTA_DATOS = "Falta de datos para completar la acción"
 //funcion para id dispositivo
 import { getBrowserFingerprint } from '../scripts/datos_usuario_control.js'
 
@@ -47,7 +48,7 @@ export const conseguir_datos_SUPABASE = async ({ encuesta_id = null, tabla = NOM
 }
 export const borrar_voto_SUPABASE = async ({ id_nombre = null, id_encuesta = null, opcion_votada_encuesta = null, mantenimiento = false }) => {
     if (!id_nombre && !id_encuesta && !opcion_votada_encuesta) {//cancelar acción
-        console.error(`Error ${mantenimiento ? TEXTO_MANTENIMIENTO : ""} al borrar el voto:`, "Falta de datos para completar la acción")
+        console.error(`Error ${mantenimiento ? TEXTO_MANTENIMIENTO : ""} al borrar el voto:`, ERROR_FALTA_DATOS)
         return;
     }
     //borrar
@@ -64,7 +65,7 @@ export const borrar_voto_SUPABASE = async ({ id_nombre = null, id_encuesta = nul
 }
 export const borrar_votacion_SUPABASE = async ({ id_encuesta = null, mantenimiento = false }) => {
     if (!id_encuesta) {//cancelar acción
-        console.error(`Error ${mantenimiento ? TEXTO_MANTENIMIENTO : ""} al borrar votacion:`, "Falta de datos para completar la acción")
+        console.error(`Error ${mantenimiento ? TEXTO_MANTENIMIENTO : ""} al borrar votacion:`, ERROR_FALTA_DATOS)
         return;
     }
     //borrar
@@ -87,7 +88,7 @@ export const añadir_votacion_SUPABASE = async ({ titulo = "Sin Título", opcion
     if (repetidos > 0) titulo += `(${repetidos})`
     //completar acción
     const { error } = await supabase
-        .from("encuestas")
+        .from(NOMBRE_TABLA_ENCUESTAS)
         .insert([
             {
                 "titulo": titulo,
@@ -109,7 +110,7 @@ export const añadir_votacion_SUPABASE = async ({ titulo = "Sin Título", opcion
 }
 export const añadir_voto_SUPABASE = async ({ id_encuesta = null, opcion_votada_encuesta = null, nombre_votante = null, bono_votante = null }) => {
     if (!id_encuesta || !opcion_votada_encuesta || !nombre_votante || !bono_votante) {//cancelar acción
-        console.error("Error al añadir voto:", "Falta de datos para completar la acción")
+        console.error("Error al añadir voto:", ERROR_FALTA_DATOS)
         return;
     }
     //completar acción
@@ -131,11 +132,11 @@ export const añadir_voto_SUPABASE = async ({ id_encuesta = null, opcion_votada_
 }
 export const actualizar_votacion_SUPABASE = async ({ id_encuesta = null, datos_cambiar = {}, mantenimiento = false }) => {
     if (!id_encuesta || !datos_cambiar) {
-        console.error("Error al actualizar:", "Falta de datos para completar la acción")
+        console.error("Error al actualizar:", ERROR_FALTA_DATOS)
         return;
     }
     const { error } = await supabase
-        .from("encuestas")
+        .from(NOMBRE_TABLA_ENCUESTAS)
         .update(datos_cambiar)
         .eq("id_encuesta", id_encuesta);
 

@@ -9,11 +9,11 @@ export async function MANTENIMIENTO_BASE_DATOS() {
     for (const vt of votaciones) {
         if (vt.terminada) continue;
 
-        const ahora = new Date();
-        const fin = new Date(vt.duracion_fechas[1]);
+        const ahora = new Date()
+        const fin = new Date(vt.duracion_fechas[1])
 
         if (fin <= ahora) {
-            const fecha = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`;
+            const fecha = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`
 
             // esperar actualización
             await actualizar_votacion_SUPABASE({
@@ -31,7 +31,7 @@ export async function MANTENIMIENTO_BASE_DATOS() {
                 const fecha_fin_usada = new Date(vt.duracion_fechas[1])
                 const diferencia_fechas = fecha_fin_usada - fecha_inicio_usada
 
-                fecha_actual.setHours(fecha_inicio_usada.getHours(), fecha_inicio_usada.getMinutes(), fecha_inicio_usada.getSeconds(), fecha_inicio_usada.getMilliseconds());
+                fecha_actual.setHours(fecha_inicio_usada.getHours(), fecha_inicio_usada.getMinutes(), fecha_inicio_usada.getSeconds(), fecha_inicio_usada.getMilliseconds())
 
 
                 const fecha_fin_cambiar = new Date(fecha_actual.getTime() + diferencia_fechas)
@@ -57,11 +57,11 @@ export async function MANTENIMIENTO_BASE_DATOS() {
     for (const vt of votaciones) {
         if (!vt.terminada) continue;
 
-        const ahora = new Date();
-        const fecha_terminada = new Date(vt.fecha_terminada);
-        const limite = new Date(fecha_terminada.getTime() + 21 * 24 * 60 * 60 * 1000);
+        const ahora = new Date()
+        const fecha_terminada = new Date(vt.fecha_terminada)
+        const limite = new Date(fecha_terminada.getTime() + 21 * 24 * 60 * 60 * 1000)
 
-        if (limite < ahora) {
+        if (limite <= ahora) {//borrar datos
             await borrar_voto_SUPABASE({ id_encuesta: vt.id_encuesta })
             await borrar_votacion_SUPABASE({ id_encuesta: vt.id_encuesta })
         }
