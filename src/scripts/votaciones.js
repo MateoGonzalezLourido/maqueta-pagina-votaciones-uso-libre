@@ -271,7 +271,7 @@ function generar_encuestas(data = null, encuesta_id = null, contador_votaciones 
                             let bono_votante = window.localStorage.getItem(NAME_DT_LOC_BONO_VARIABLE)
                             if (bono_votante != "true") bono_votante = false
                             añadir_voto_SUPABASE({
-                                "id_encuesta": id_seleccionado[0], "opcion_votada_encuesta": id_seleccionado[1], "nombre_votante": nombre_votante, "bono_votante": Boolean(bono_votante)
+                                id_encuesta: id_seleccionado[0], opcion_votada_encuesta: id_seleccionado[1], nombre_votante: nombre_votante, bono_votante: Boolean(bono_votante)
                             }).then(() => {
                                 //mostrar cambios en el html
                                 const id_img = boton.firstElementChild.id
