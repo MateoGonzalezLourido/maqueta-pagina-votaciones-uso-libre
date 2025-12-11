@@ -1,5 +1,4 @@
 /*Importar cosas necesarias para el codigo */
-import { supabase } from '../supabase/supabase'
 import { getBrowserFingerprint } from './datos_usuario_control.js'
 import { MANTENIMIENTO_BASE_DATOS } from './mantenimiento_servidor.js'
 
@@ -38,67 +37,9 @@ const TEXTO_ENCUESTA_ACABADA_SELECT = " (Resultados)"
 const VALOR_DEFECTO_NOMBRE_USUARIO = "anónimo"
 //URLs
 const URL_CHECKED_IMG = "/checked.svg"
-//supabase datos
-const NOMBRE_TABLA_ENCUESTAS = "encuestas"
-const NOMBRE_TABLA_VOTACIONES = "encuestas_votaciones"
-const NOMBRE_TABLA_DEFECTO_USAR = NOMBRE_TABLA_ENCUESTAS
 
-/*CODIGO */
-//funciones de SUPABASE
-const conseguir_datos_SUPABASE = async ({ encuesta_id = null, tabla = NOMBRE_TABLA_DEFECTO_USAR }) => {
-    let query = supabase.from(tabla).select("*");
-    if (encuesta_id) query = query.eq("id_encuesta", encuesta_id);
-
-    const { data, error } = await query;
-    if (error) {
-        console.error(
-            tabla === NOMBRE_TABLA_ENCUESTAS
-                ? "Error al recibir datos encuestas:"
-                : "Error al recibir votaciones encuestas:",
-            error
-        )
-        return []
-    }
-
-    if (tabla === NOMBRE_TABLA_ENCUESTAS) {
-        if (!data || data.length === 0) {
-            console.error("No hay encuestas!")
-        } else if (!data[0].opciones || data[0].opciones.length === 0) {
-            console.error("No hay opciones!")
-        }
-    }
-    return data
-}
-
-const borrar_votacion_encuesta = async (id_nombre, id_encuesta, opcion_votada_encuesta) => {
-    const { error } = await supabase
-        .from(NOMBRE_TABLA_VOTACIONES)
-        .delete()
-        .eq('id_nombre', id_nombre)
-        .eq('id_encuesta', id_encuesta)
-        .eq("opcion_votada_encuesta", opcion_votada_encuesta);
-
-    if (error) {
-        console.error("Error al borrar el voto:", error)
-    }
-}
-const añadir_votacion_encuesta = async ({ id_nombre, id_encuesta, opcion_votada_encuesta, nombre_votante, bono_votante }) => {
-    const { error } = await supabase
-        .from(NOMBRE_TABLA_VOTACIONES)
-        .insert([
-            {
-                "id_nombre": id_nombre,
-                "id_encuesta": id_encuesta,
-                "opcion_votada_encuesta": opcion_votada_encuesta,
-                "nombre_votante": nombre_votante,
-                "bono_votante": bono_votante
-            }
-        ]);
-
-    if (error) {
-        console.error("Error al añadir voto:", error);
-    }
-}
+/*FUNCIONES DE SUPABASE */
+import { conseguir_datos_SUPABASE, borrar_voto_SUPABASE, añadir_voto_SUPABASE } from '../supabase/funciones.js'
 
 //crear select de las encuestas
 const generar_titulos_encuestas = (data = null, encuesta_id = -1) => {
@@ -237,9 +178,9 @@ function generar_encuestas(data = null, encuesta_id = null, contador_votaciones 
             const titulo_escogido = e.target.selectedOptions[0].id.replace(PARTE_ID_ENCUESTA_TITULO, "")
             const encuesta_escogida = data.find(x => x.id_encuesta == titulo_escogido)
             //registro de votos: hacer un recuento de los datos separados por opcion
-            conseguir_datos_SUPABASE({ "encuesta_id": encuesta_escogida.id_encuesta, "tabla": NOMBRE_TABLA_VOTACIONES }).then((votaciones) => {
-                let contador_votaciones = contador_votos(votaciones, encuesta_escogida.id_encuesta)
-                let opciones_votadas = mirar_opciones_votadas(votaciones, encuesta_escogida.id_encuesta)
+            conseguir_datos_SUPABASE({ encuesta_id: encuesta_escogida.id_encuesta, tabla: "votaciones", datos_recibir: ["id_nombre", "id_encuesta", "opcion_votada_encuesta", ...(voto_anonimo || datos_anonimos ? [] : ["nombre_votante"]), "bono_votante"] }).then((votaciones) => {
+                let contador_votaciones = contador_votos(votaciones)
+                let opciones_votadas = mirar_opciones_votadas(votaciones)
                 //crear datos guardado de las votaciones de la encuesta para reducir solicitudes a la base de datos
                 if (!datos_anonimos) {
                     window.sessionStorage.setItem(NAME_DT_LOC_VOTACIONES, JSON.stringify(votaciones))
@@ -286,7 +227,7 @@ function generar_encuestas(data = null, encuesta_id = null, contador_votaciones 
                     }
                     const id_nombre = getBrowserFingerprint()
                     //ver si ya existe ese voto
-                    conseguir_datos_SUPABASE({ "encuesta_id": encuesta_id, "tabla": NOMBRE_TABLA_VOTACIONES }).then(votaciones => {
+                    conseguir_datos_SUPABASE({ encuesta_id: encuesta_id, tabla: "votaciones" }).then(votaciones => {
                         let existe = votaciones.find(x => x.id_nombre == id_nombre && x.id_encuesta == id_seleccionado[0] && x.opcion_votada_encuesta == id_seleccionado[1])
                         let unico_voto_realizado = null
                         if (voto_unico) {
@@ -303,7 +244,7 @@ function generar_encuestas(data = null, encuesta_id = null, contador_votaciones 
                                 )
                             )
                         ) {
-                            borrar_votacion_encuesta(id_nombre.toString(), Number(id_seleccionado[0]), Number(id_seleccionado[1])).then(() => {
+                            borrar_voto_SUPABASE(id_nombre.toString(), Number(id_seleccionado[0]), Number(id_seleccionado[1])).then(() => {
                                 //mostrar cambios en el html
                                 const id_img = boton.firstElementChild.id
                                 document.querySelector(`#${id_img}`).classList.remove(CLASS_CHECKED_CHECKBOX_VOTO)
@@ -330,9 +271,9 @@ function generar_encuestas(data = null, encuesta_id = null, contador_votaciones 
                             let bono_votante = window.localStorage.getItem(NAME_DT_LOC_BONO_VARIABLE)
                             if (bono_votante != "true") bono_votante = false
                             const datos_enviar_voto = {
-                                "id_nombre": id_nombre, "id_encuesta": id_seleccionado[0], "opcion_votada_encuesta": id_seleccionado[1], "nombre_votante": nombre_votante, "bono_votante": Boolean(bono_votante)
+                                "id_encuesta": id_seleccionado[0], "opcion_votada_encuesta": id_seleccionado[1], "nombre_votante": nombre_votante, "bono_votante": Boolean(bono_votante)
                             }
-                            añadir_votacion_encuesta(datos_enviar_voto).then(() => {
+                            añadir_voto_SUPABASE(datos_enviar_voto).then(() => {
                                 //mostrar cambios en el html
                                 const id_img = boton.firstElementChild.id
                                 document.querySelector(`#${id_img}`).classList.remove(CLASS_SEMIDESAPARECER_CHECKBOX_VOTO)
@@ -351,7 +292,7 @@ function generar_encuestas(data = null, encuesta_id = null, contador_votaciones 
                         }
                     })
                 }
-                conseguir_datos_SUPABASE({ "encuesta_id": id_seleccionado[0], "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuesta => {
+                conseguir_datos_SUPABASE({ encuesta_id: id_seleccionado[0], tabla: "encuestas", datos_recibir: ["voto_unico"] }).then(encuesta => {
                     votar(encuesta[0].voto_unico)
                 })
             })
@@ -363,8 +304,8 @@ function generar_encuestas(data = null, encuesta_id = null, contador_votaciones 
         $bt_analizar_datos.addEventListener("click", () => {
             const $pagina_datos_analizados_encuesta = document.querySelector(`#${$ID_PAGINA_DATOS_ANALIZAR_VOTACION}`)
             $bt_analizar_datos.style.cursor = "progress"//puntero cargando
-            conseguir_datos_SUPABASE({ "encuesta_id": encuesta_id, "tabla": NOMBRE_TABLA_ENCUESTAS }).then(encuesta => {
-                conseguir_datos_SUPABASE({ "encuesta_id": encuesta_id, "tabla": NOMBRE_TABLA_VOTACIONES }).then(votaciones => {
+            conseguir_datos_SUPABASE({ encuesta_id: encuesta_id, tabla: "encuestas", datos_recibir: ["titulo", "opciones"] }).then(encuesta => {
+                conseguir_datos_SUPABASE({ encuesta_id: encuesta_id, tabla: "votaciones", datos_recibir: ["opcion_votada_encuesta", "nombre_votante", "bono_votante"] }).then(votaciones => {
                     $bt_analizar_datos.style.cursor = "pointer"//quitar puntero cargando
                     const contador_votaciones = contador_votos(votaciones)
                     const mostrar_recuento_votos = () => {
@@ -551,7 +492,7 @@ function generar_encuestas(data = null, encuesta_id = null, contador_votaciones 
 globalThis.addEventListener("DOMContentLoaded", () => {
     MANTENIMIENTO_BASE_DATOS()
         .then(() => {
-            return conseguir_datos_SUPABASE({});
+            return conseguir_datos_SUPABASE({ tabla: "encuestas", datos_recibir: ["titulo", "opciones", "principal", "duracion_fechas", "voto_unico", "terminada", "mostrar_resultados_cerrada", "datos_anonimos", "voto_anonimo"] });
         })
         .then((data) => {
             const fecha_actual = new Date()
@@ -565,8 +506,9 @@ globalThis.addEventListener("DOMContentLoaded", () => {
                 alert("NO HAY VOTACIONES disponibles")
             }
             return conseguir_datos_SUPABASE({
-                encuesta_id,
-                tabla: NOMBRE_TABLA_VOTACIONES
+                encuesta_id:
+                    encuesta_id,
+                tabla: "votaciones"
             }).then(votaciones => ({ data, encuesta_id, votaciones }));
         })
         .then(({ data, encuesta_id, votaciones }) => {
