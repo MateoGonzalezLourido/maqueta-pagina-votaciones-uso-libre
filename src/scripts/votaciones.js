@@ -244,7 +244,7 @@ function generar_encuestas(data = null, encuesta_id = null, contador_votaciones 
                                 )
                             )
                         ) {
-                            borrar_voto_SUPABASE(id_nombre.toString(), Number(id_seleccionado[0]), Number(id_seleccionado[1])).then(() => {
+                            borrar_voto_SUPABASE({ id_nombre: id_nombre.toString(), id_encuesta: Number(id_seleccionado[0]), opcion_votada_encuesta: Number(id_seleccionado[1]) }).then(() => {
                                 //mostrar cambios en el html
                                 const id_img = boton.firstElementChild.id
                                 document.querySelector(`#${id_img}`).classList.remove(CLASS_CHECKED_CHECKBOX_VOTO)
@@ -270,10 +270,9 @@ function generar_encuestas(data = null, encuesta_id = null, contador_votaciones 
                             }
                             let bono_votante = window.localStorage.getItem(NAME_DT_LOC_BONO_VARIABLE)
                             if (bono_votante != "true") bono_votante = false
-                            const datos_enviar_voto = {
+                            añadir_voto_SUPABASE({
                                 "id_encuesta": id_seleccionado[0], "opcion_votada_encuesta": id_seleccionado[1], "nombre_votante": nombre_votante, "bono_votante": Boolean(bono_votante)
-                            }
-                            añadir_voto_SUPABASE(datos_enviar_voto).then(() => {
+                            }).then(() => {
                                 //mostrar cambios en el html
                                 const id_img = boton.firstElementChild.id
                                 document.querySelector(`#${id_img}`).classList.remove(CLASS_SEMIDESAPARECER_CHECKBOX_VOTO)
