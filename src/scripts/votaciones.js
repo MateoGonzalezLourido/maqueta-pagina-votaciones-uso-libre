@@ -34,13 +34,15 @@ const TEXTO_ENCUESTA_ACABADA_SELECT = " (Resultados)"
 import { conseguir_datos_SUPABASE, borrar_voto_SUPABASE, añadir_voto_SUPABASE } from '../supabase/funciones.js'
 
 //crear select de las encuestas
-const generar_titulos_encuestas = (data = null, encuesta_id = -1) => {
+export const generar_titulos_encuestas = (data = null, encuesta_id = -1, comparar_fecha = true) => {
     if (data == null) return ``
     let html = ``
     const fecha_actual = new Date()
     data.forEach(encuesta => {
-        const fecha_inicio = new Date(encuesta.duracion_fechas[0])
-        if (fecha_inicio > fecha_actual) return;
+        if (comparar_fecha) {//en el gestionador de encuestas esto no se hace
+            const fecha_inicio = new Date(encuesta.duracion_fechas[0])
+            if (fecha_inicio > fecha_actual) return;
+        }
         let principal = ""
         if (encuesta_id == encuesta.id_encuesta) {//poner una encuesta como principal (la que se seleccionó)
             principal = "selected"
@@ -49,6 +51,7 @@ const generar_titulos_encuestas = (data = null, encuesta_id = -1) => {
     })
     return html
 }
+
 const generar_opciones_encuestas = (encuestas, encuesta_id, contador_votaciones, opciones_votadas = []) => {
     let html_opciones = ``
     encuestas.forEach(encuesta => {//para buscar la encuesta que esta seleccionada

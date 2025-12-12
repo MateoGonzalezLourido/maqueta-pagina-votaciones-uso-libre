@@ -1,5 +1,6 @@
 /*VARIABLES globales*/
 import { VALOR_DEFECTO_NOMBRE_USUARIO, URL_IMG_AÑADIR_ENCUESTA, $id_select_encuestas, PARTE_ID_ENCUESTA_TITULO, NAME_AJUSTES_ENCUESTA } from '../config.js'
+import { generar_titulos_encuestas } from './votaciones.js'
 /*Varables del archivo */
 const ID_BT_ABRIR_PAGINA_ADMIN = "bt-abrir-menu-log-admin"
 const ID_BT_AÑADIR_ENCUESTA = "bt-añadir-encuesta"
@@ -22,15 +23,6 @@ function verificar_acceso_admin(entrada) {
         return true
     }
     return false
-}
-const generar_titulos_encuestas = (data, encuesta_id) => {
-    let html = ``
-    data.forEach(encuesta => {
-        //poner una encuesta como principal (la que se seleccionó)
-        let principal = encuesta_id == encuesta.id_encuesta ? "selected" : ""
-        html += `<option id="${PARTE_ID_ENCUESTA_TITULO}${encuesta.id_encuesta}" value="${encuesta.titulo}" ${principal}>${encuesta.terminada ? "*" : ""}${encuesta.titulo}${encuesta.terminada ? TEXTO_ENCUESTA_ACABADA_SELECT : ""}</option>`
-    })
-    return html
 }
 //fragmento de codigo para el recuento de votos generales
 function contador_votos(votaciones) {
@@ -479,7 +471,7 @@ const Generar_cuerpo_configurador_votacion = (data, id_encuesta, opcion) => {
     document.querySelector("#main").innerHTML = `
     <section class="inicio-admin">
         <select id="${$id_select_encuestas}">
-            ${generar_titulos_encuestas(data, id_encuesta)}
+            ${generar_titulos_encuestas(data, id_encuesta, false)}
         </select>
         <div id="${ID_BT_AÑADIR_ENCUESTA}">
             <img draggable="false" class="img-añadir-encuesta" src="${URL_IMG_AÑADIR_ENCUESTA}" alt="crear">
@@ -573,7 +565,7 @@ const Generar_cuerpo_configurador_votacion = (data, id_encuesta, opcion) => {
                     String(f.getMinutes()).padStart(2, "0");
                 añadir_votacion_SUPABASE({ titulo: titulo_votacion, opciones: opciones, voto_unico: voto_unico_votacion, duracion_fechas: [fecha_actual, fecha_final] }).then(() => {
                     conseguir_datos_SUPABASE({ tabla: "encuestas", datos_recibir: ["id_encuesta", "titulo", "principal", "terminada"] }).then(encuestas => {
-                        document.querySelector("#select-encuestas").innerHTML = generar_titulos_encuestas(encuestas, id_encuesta)
+                        document.querySelector("#select-encuestas").innerHTML = generar_titulos_encuestas(encuestas, id_encuesta, false)
                         document.querySelector("#bloqueador-acciones-crear-votacion").remove()
                     })
 
