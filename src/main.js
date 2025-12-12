@@ -12,8 +12,8 @@ document.querySelector('#app').innerHTML = `
     <div id="bt-usuario"><span>*Datos Usuario*</span></div>
       <div id="menu-usuario">
         <div>
-          <label for="nombre">Nombre:</label>
-          <input name="nombre" type="text" placeholder="<anónimo>"value="" id="input-nombre-usuario">
+          <label for="input-nombre-usuario">Nombre:</label>
+          <input type="number" placeholder="<anónimo>"value="" id="input-nombre-usuario">
           </div>
           <div>
           <label for="bono">Bono:</label>
