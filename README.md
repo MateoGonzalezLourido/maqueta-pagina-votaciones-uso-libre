@@ -1,5 +1,6 @@
 # maqueta-pagina-votaciones-uso-libre
 una pagina para votaciones, que cualquiera puede copiar para uso propio
+!ACTUALMENTE LOS EVENTOS NO FUNCIONAN CORRECTAMENTE EN EL MÓBIL
 
 #Caracteristicas
 
