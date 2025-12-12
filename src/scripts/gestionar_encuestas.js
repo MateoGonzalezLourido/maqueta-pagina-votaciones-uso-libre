@@ -416,7 +416,7 @@ const menu_confirmacion = () => {
             </div>
             </div>
         `)
-
+        document.querySelector("#confirmar-accion-bt").focus()
 
         // función cerrar y resolver
         const Cerrar_menu_confirmacion = (valor) => {
@@ -438,7 +438,7 @@ const menu_confirmacion = () => {
             e.stopPropagation();
             Cerrar_menu_confirmacion(false);
         });
-    });
+    })
 }
 function reiniciar_ajustes_anteriores(id_encuesta) {
     conseguir_datos_SUPABASE({ encuesta_id: id_encuesta, tabla: "encuestas", datos_recibir: ["titulo", "opciones", "voto_unico", "principal", "duracion_fechas", "republicar", "mostrar_resultados_cerrada", "voto_anonimo", "datos_anonimos"] }).then(([encuesta]) => {
