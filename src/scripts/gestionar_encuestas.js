@@ -144,8 +144,8 @@ function comprobar_actualizar_datos(id_encuesta, datos_guardados) {
 }
 
 const Generar_configurador_encuesta = (encuesta_id) => {
-    conseguir_datos_SUPABASE({ encuesta_id: encuesta_id, tabla: "encuestas", datos_recibir: ["titulo", "opciones", "principal", "duracion_fechas", "republicar", "voto_unico", "terminada", "mostrar_resultados_cerrada", "datos_anonimos", "voto_anonimo"] }).then(encuesta => {
-        if (encuesta[0].terminada) {
+    conseguir_datos_SUPABASE({ encuesta_id: encuesta_id, tabla: "encuestas", datos_recibir: ["titulo", "opciones", "principal", "duracion_fechas", "republicar", "voto_unico", "terminada", "mostrar_resultados_cerrada", "datos_anonimos", "voto_anonimo"] }).then(([encuesta]) => {
+        if (encuesta.terminada) {
             document.querySelector("#cuerpo-cosas").innerHTML = `<div class="alineador-bt-abrir-encuesta">
             <button id="bt-abrir-encuesta">Reabrir Votacion</button>
             </div>`

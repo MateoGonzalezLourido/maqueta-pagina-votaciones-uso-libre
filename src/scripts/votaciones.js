@@ -346,8 +346,8 @@ function generar_encuestas(data = null, encuesta_id = null, contador_votaciones 
                         }
                     })
                 }
-                conseguir_datos_SUPABASE({ encuesta_id: id_seleccionado[0], tabla: "encuestas", datos_recibir: ["voto_unico"] }).then(encuesta => {
-                    votar(encuesta[0].voto_unico)
+                conseguir_datos_SUPABASE({ encuesta_id: id_seleccionado[0], tabla: "encuestas", datos_recibir: ["voto_unico"] }).then(([encuesta]) => {
+                    votar(encuesta.voto_unico)
                 })
             })
         })
