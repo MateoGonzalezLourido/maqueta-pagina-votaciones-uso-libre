@@ -596,34 +596,38 @@ globalThis.addEventListener("DOMContentLoaded", () => {
             document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).addEventListener("blur", () => {
                 cerrar_log()
             })
-            document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).addEventListener("keydown", (e) => {
-                if (e.key === "Enter") {
-                    const entrada_key_log = (document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).value.replace(/[.\\/;,!#{}%&$"'*]/g, " ").trim()).toString()
-                    if (verificar_acceso_admin(entrada_key_log)) {
-                        console.log(`%c${MENSAJE_ACCESO_CORRECTO}`, "color: green; font-weight: bold;");
-                        //poner una como principal
-                        conseguir_datos_SUPABASE({ tabla: "encuestas" }).then(data => {
-                            //escoger una encuesta como principal(si hay solo una principal esa es, sino se coge la primera que llegue)
-                            //esto se hace solo al inicio, luego solo se pone la que se seleccione
-                            let encuesta_id = data.find(x => x.principal && !x.terminada == true);
-                            if (encuesta_id) encuesta_id = encuesta_id.id_encuesta;
-                            else {
-                                encuesta_id = data.find(x => x.principal == true);
-                                encuesta_id = encuesta_id ? encuesta_id.id_encuesta : data[0]?.id_encuesta ?? null;
-                            }
-                            document.querySelector("#app").innerHTML = `
+            function ejecutar() {
+                const entrada_key_log = (document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).value.replace(/[.\\/;,!#{}%&$"'*]/g, " ").trim()).toString()
+                if (verificar_acceso_admin(entrada_key_log)) {
+                    console.log(`%c${MENSAJE_ACCESO_CORRECTO}`, "color: green; font-weight: bold;");
+                    //poner una como principal
+                    conseguir_datos_SUPABASE({ tabla: "encuestas" }).then(data => {
+                        //escoger una encuesta como principal(si hay solo una principal esa es, sino se coge la primera que llegue)
+                        //esto se hace solo al inicio, luego solo se pone la que se seleccione
+                        let encuesta_id = data.find(x => x.principal && !x.terminada == true);
+                        if (encuesta_id) encuesta_id = encuesta_id.id_encuesta;
+                        else {
+                            encuesta_id = data.find(x => x.principal == true);
+                            encuesta_id = encuesta_id ? encuesta_id.id_encuesta : data[0]?.id_encuesta ?? null;
+                        }
+                        document.querySelector("#app").innerHTML = `
                             <div><span id="${ID_BT_VOLVER_HOME}"><-HOME-></span></div>
                             <main id="main">
                             </main>
                             `
-                            //completar main
-                            Generar_cuerpo_configurador_votacion(data, encuesta_id, 1)
-                        })
-                    }
-                    else {
-                        cerrar_log()
-                    }
+                        //completar main
+                        Generar_cuerpo_configurador_votacion(data, encuesta_id, 1)
+                    })
                 }
+                else {
+                    cerrar_log()
+                }
+            }
+            document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).addEventListener("keydown", (e) => {
+                if (e.key === "Enter") ejecutar();
+            })
+            document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).addEventListener("input", e => {
+                if (e.inputType === "insertLineBreak") ejecutar();
             })
         }
     })
