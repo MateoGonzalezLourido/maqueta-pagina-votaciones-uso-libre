@@ -1,6 +1,6 @@
 /*VARIABLES globales*/
 import { VALOR_DEFECTO_NOMBRE_USUARIO, URL_IMG_AÑADIR_ENCUESTA, $id_select_encuestas, PARTE_ID_ENCUESTA_TITULO, NAME_AJUSTES_ENCUESTA } from '../config.js'
-import { generar_titulos_encuestas } from './votaciones.js'
+import { generar_titulos_encuestas, mostrar_recuento_votos, mostrar_nombre_votantes } from './votaciones.js'
 /*Varables del archivo */
 const ID_BT_ABRIR_PAGINA_ADMIN = "bt-abrir-menu-log-admin"
 const ID_BT_AÑADIR_ENCUESTA = "bt-añadir-encuesta"
@@ -11,8 +11,7 @@ const CLASS_MOSTRAR_MENU = "mostrar-menu-log"
 const CLASS_QUITAR_MENU = "quitar-menu-log"
 const MENSAJE_ACCESO_CORRECTO = "*Acceso <ROL> ADMIN correcto"
 const $pagina_datos_analizados_encuesta = "admin-pagina-datos-analizados-encuesta"
-//textos
-const TEXTO_ENCUESTA_ACABADA_SELECT = " (cerrada)"
+const MENU_BLOQUEO_CONTEXTO = document.querySelector("#bloqueo-interacciones-menu-contexto")
 /*funciones de SUPABASE*/
 import { conseguir_datos_SUPABASE, añadir_votacion_SUPABASE, actualizar_votacion_SUPABASE } from '../supabase/funciones.js'
 /*ACTUALMENTE ESTA ADMIN KEY ESTA PUBLICA */
@@ -313,82 +312,22 @@ const Generar_configurador_encuesta = (encuesta_id) => {
         }
     })
 }
+
 const Generar_resultados_encuesta = (id_encuesta) => {
     //evento analizar datos
     const Datos_completar = (encuesta, votaciones) => {
         document.querySelector("#main").style.cursor = "progress"//puntero cargando
         document.querySelector("#main").style.cursor = "default"//quitar puntero cargando
         const contador_votaciones = contador_votos(votaciones)
-        const mostrar_recuento_votos = () => {
-            let html = ``
-            html += `<tr><td>Opción</td><td>nºvotos</td><td>nºbonos</br>(confirmados)</td></tr>`
-            let opciones_ordenadas_mayor = contador_votaciones.sort((x, y) => y.votantes.length - x.votantes.length)
-            opciones_ordenadas_mayor.forEach(datos_op => {
-                let recuento_bonos = 0
-                datos_op.votantes.forEach(vt => {
-                    if (vt.bono) recuento_bonos++
-                })
-                html += `<tr>
-                            <td>${encuesta[0].opciones[datos_op.id]}</td>
-                            <td>${[datos_op.votantes.length]}</td>
-                            <td>${recuento_bonos}</td>
-                            </tr>`
-            })
-            return html
-        }
-        const mostrar_nombre_votantes = () => {
-            let html = ``
-            html += `<table><caption><strong>Votantes</strong> (más a menos votado)</caption><tr><td>Opción</td><td>Votantes</td></tr>`
-            let opciones_ordenadas_mayor = contador_votaciones.sort((x, y) => y.votantes.length - x.votantes.length)
-            opciones_ordenadas_mayor.forEach(datos_op => {
-                let usuario_datos = {
-                    "identificados": [],
-                    "anonimos": {
-                        "totales": 0,
-                        "bonos": 0
-                    }
-                }
-                datos_op.votantes.forEach(vt => {
-                    if (vt.nombre != "anónimo") {
-                        if (vt.bono == true) {
-                            usuario_datos.identificados.push(`${vt.nombre}(bono)`)
-                        }
-                        else {
-                            usuario_datos.identificados.push(vt.nombre)
-                        }
-                    }
-                    else {
-                        usuario_datos.anonimos.totales++
-                        if (vt.bono == true) usuario_datos.anonimos.bonos++
-                    }
-                })
-                let usuarios = ``
-                if (usuario_datos.anonimos.totales != 0) {
-                    usuarios += `*${VALOR_DEFECTO_NOMBRE_USUARIO} (bonos: ${usuario_datos.anonimos.bonos} de ${usuario_datos.anonimos.totales})`
-                    if (usuario_datos.identificados.length != 0) {
-                        usuarios += "</br>"
-                    }
-                }
-                usuario_datos.identificados.forEach(us => {
-                    usuarios += `${us}</br>`
-                })
-                html += `<tr>
-                            <td>${encuesta[0].opciones[datos_op.id]}</td>
-                            <td>${usuarios}</td>
-                            </tr>`
-            })
-            html += "</table>"
-            return html
-        }
-        return (`<div class="head-pagina-datos"><h3>${encuesta[0].titulo}</h3></div>
+        return (`<div class="head-pagina-datos"><h3>${encuesta.titulo}</h3></div>
                     <table>
                     <caption><strong>Recuento de votos</strong></br>(más a menos votado)</caption>
-                    ${mostrar_recuento_votos()}
+                    ${mostrar_recuento_votos(contador_votaciones, encuesta)}
                     </table>
-                    ${!encuesta[0].voto_anonimo ? mostrar_nombre_votantes() : ""}
+                    ${!encuesta.voto_anonimo ? mostrar_nombre_votantes(contador_votaciones, encuesta) : ""}
                     `)
     }
-    conseguir_datos_SUPABASE({ encuesta_id: id_encuesta, tabla: "encuestas", datos_recibir: ["titulo", "opciones"] }).then(encuesta => {
+    conseguir_datos_SUPABASE({ encuesta_id: id_encuesta, tabla: "encuestas", datos_recibir: ["titulo", "opciones"] }).then(([encuesta]) => {
         conseguir_datos_SUPABASE({ encuesta_id: id_encuesta, tabla: "votaciones", datos_recibir: ["opcion_votada_encuesta", "nombre_votante", "bono_votante"] }).then((votaciones) => {
             document.querySelector("#cuerpo-cosas").innerHTML = `
                 <div id="${$pagina_datos_analizados_encuesta}">
@@ -401,12 +340,11 @@ const Generar_resultados_encuesta = (id_encuesta) => {
 const menu_confirmacion = () => {
     return new Promise((resolve) => {
         // si ya existe, eliminar
-        const menu = document.querySelector("#bloqueo-interacciones-menu-contexto");
-        if (menu) menu.remove()
+        if (MENU_BLOQUEO_CONTEXTO) MENU_BLOQUEO_CONTEXTO.remove()
 
         // crear menú
         document.querySelector("#main").insertAdjacentHTML("afterend", `
-            <div id="bloqueo-interacciones-menu-contexto">
+            <div id="${MENU_BLOQUEO_CONTEXTO}">
             <div id="menu-contexto">
                 <span>*Confirmar acción*</span>
                 <div>
@@ -420,23 +358,23 @@ const menu_confirmacion = () => {
 
         // función cerrar y resolver
         const Cerrar_menu_confirmacion = (valor) => {
-            if (!menu) resolve(valor)
+            if (!MENU_BLOQUEO_CONTEXTO) resolve(valor)
             else {
-                menu.remove()
+                MENU_BLOQUEO_CONTEXTO.remove()
                 resolve(valor) // resuelve la promesa con true o false
             }
         }
 
         // confirmar
         document.querySelector("#confirmar-accion-bt").addEventListener("click", (e) => {
-            e.stopPropagation();
-            Cerrar_menu_confirmacion(true);
+            e.stopPropagation()
+            Cerrar_menu_confirmacion(true)
         })
 
         // cancelar
         document.querySelector("#cancelar-accion-bt").addEventListener("click", (e) => {
-            e.stopPropagation();
-            Cerrar_menu_confirmacion(false);
+            e.stopPropagation()
+            Cerrar_menu_confirmacion(false)
         });
     })
 }

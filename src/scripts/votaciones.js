@@ -28,8 +28,7 @@ const TEXTO_VOTO_UNICO = "*voto único"
 const TEXTO_VOTO_MULTIPLE = "*voto múltiple"
 const TEXTO_ANALIZAR_DATOS_BT = "Analizar Datos"
 const TEXTO_ENCUESTA_ACABADA_SELECT = " (Resultados)"
-//URLs
-
+const TEXTO_ENCUESTA_CERRADA_SELECT = " (cerrada)"
 /*FUNCIONES DE SUPABASE */
 import { conseguir_datos_SUPABASE, borrar_voto_SUPABASE, añadir_voto_SUPABASE } from '../supabase/funciones.js'
 
@@ -47,7 +46,7 @@ export const generar_titulos_encuestas = (data = null, encuesta_id = -1, compara
         if (encuesta_id == encuesta.id_encuesta) {//poner una encuesta como principal (la que se seleccionó)
             principal = "selected"
         }
-        html += `<option id="${PARTE_ID_ENCUESTA_TITULO}${encuesta.id_encuesta}" value="${encuesta.titulo}" ${principal}>${encuesta.terminada ? "*" : ""}${encuesta.titulo}${encuesta.terminada ? TEXTO_ENCUESTA_ACABADA_SELECT : ""}</option>`
+        html += `<option id="${PARTE_ID_ENCUESTA_TITULO}${encuesta.id_encuesta}" value="${encuesta.titulo}" ${principal}>${encuesta.terminada ? "*" : ""}${encuesta.titulo}${encuesta.terminada ? comparar_fecha ? TEXTO_ENCUESTA_ACABADA_SELECT : TEXTO_ENCUESTA_CERRADA_SELECT : ""}</option>`
     })
     return html
 }
@@ -124,6 +123,67 @@ function mirar_opciones_votadas(votaciones) {
     return opciones_votadas
 }
 //ES EL "MAIN" O "CONTROLADOR" DE LAS ENCUESTAS 
+export const mostrar_recuento_votos = (contador_votaciones, encuesta) => {
+    let html = ``
+    html += `<tr><td>Opción</td><td>nºvotos</td><td>nºbonos</br>(confirmados)</td></tr>`
+    let opciones_ordenadas_mayor = contador_votaciones.sort((x, y) => y.votantes.length - x.votantes.length)
+    opciones_ordenadas_mayor.forEach(datos_op => {
+        let recuento_bonos = 0
+        datos_op.votantes.forEach(vt => {
+            if (vt.bono) recuento_bonos++
+        })
+        html += `<tr>
+        <td>${encuesta.opciones[datos_op.id]}</td>
+        <td>${[datos_op.votantes.length]}</td>
+        <td>${recuento_bonos}</td>
+        </tr>`
+    })
+    return html
+}
+export const mostrar_nombre_votantes = (contador_votaciones, encuesta) => {
+    let html = ``
+    html += `<table><caption><strong>Votantes</strong> (más a menos votado)</caption><tr><td>Opción</td><td>Votantes</td></tr>`
+    let opciones_ordenadas_mayor = contador_votaciones.sort((x, y) => y.votantes.length - x.votantes.length)
+    opciones_ordenadas_mayor.forEach(datos_op => {
+        let usuario_datos = {
+            "identificados": [],
+            "anonimos": {
+                "totales": 0,
+                "bonos": 0
+            }
+        }
+        datos_op.votantes.forEach(vt => {
+            if (vt.nombre != "anónimo") {
+                if (vt.bono == true) {
+                    usuario_datos.identificados.push(`${vt.nombre}(bono)`)
+                }
+                else {
+                    usuario_datos.identificados.push(vt.nombre)
+                }
+            }
+            else {
+                usuario_datos.anonimos.totales++
+                if (vt.bono == true) usuario_datos.anonimos.bonos++
+            }
+        })
+        let usuarios = ``
+        if (usuario_datos.anonimos.totales != 0) {
+            usuarios += `*${VALOR_DEFECTO_NOMBRE_USUARIO} (bonos: ${usuario_datos.anonimos.bonos} de ${usuario_datos.anonimos.totales})`
+            if (usuario_datos.identificados.length != 0) {
+                usuarios += "</br>"
+            }
+        }
+        usuario_datos.identificados.forEach(us => {
+            usuarios += `${us}</br>`
+        })
+        html += `<tr>
+                    <td>${encuesta.opciones[datos_op.id]}</td>
+                    <td>${usuarios}</td>
+                    </tr>`
+    })
+    html += "</table>"
+    return html
+}
 function generar_encuestas(data = null, encuesta_id = null, contador_votaciones = null, opciones_votadas = null) {
     const inicio_votacion_encontrada = data.find(x => x.id_encuesta == encuesta_id)
     let datos_anonimos = null
@@ -298,76 +358,14 @@ function generar_encuestas(data = null, encuesta_id = null, contador_votaciones 
         $bt_analizar_datos.addEventListener("click", () => {
             const $pagina_datos_analizados_encuesta = document.querySelector(`#${$ID_PAGINA_DATOS_ANALIZAR_VOTACION}`)
             $bt_analizar_datos.style.cursor = "progress"//puntero cargando
-            conseguir_datos_SUPABASE({ encuesta_id: encuesta_id, tabla: "encuestas", datos_recibir: ["titulo", "opciones"] }).then(encuesta => {
+            conseguir_datos_SUPABASE({ encuesta_id: encuesta_id, tabla: "encuestas", datos_recibir: ["titulo", "opciones"] }).then(([encuesta]) => {
                 conseguir_datos_SUPABASE({ encuesta_id: encuesta_id, tabla: "votaciones", datos_recibir: ["opcion_votada_encuesta", "nombre_votante", "bono_votante"] }).then(votaciones => {
                     $bt_analizar_datos.style.cursor = "pointer"//quitar puntero cargando
                     const contador_votaciones = contador_votos(votaciones)
-                    const mostrar_recuento_votos = () => {
-                        let html = ``
-                        html += `<tr><td>Opción</td><td>nºvotos</td><td>nºbonos</br>(confirmados)</td></tr>`
-                        let opciones_ordenadas_mayor = contador_votaciones.sort((x, y) => y.votantes.length - x.votantes.length)
-                        opciones_ordenadas_mayor.forEach(datos_op => {
-                            let recuento_bonos = 0
-                            datos_op.votantes.forEach(vt => {
-                                if (vt.bono) recuento_bonos++
-                            })
-                            html += `<tr>
-                            <td>${encuesta[0].opciones[datos_op.id]}</td>
-                            <td>${[datos_op.votantes.length]}</td>
-                            <td>${recuento_bonos}</td>
-                            </tr>`
-                        })
-                        return html
-                    }
-                    const mostrar_nombre_votantes = () => {
-                        let html = ``
-                        html += `<table><caption><strong>Votantes</strong> (más a menos votado)</caption><tr><td>Opción</td><td>Votantes</td></tr>`
-                        let opciones_ordenadas_mayor = contador_votaciones.sort((x, y) => y.votantes.length - x.votantes.length)
-                        opciones_ordenadas_mayor.forEach(datos_op => {
-                            let usuario_datos = {
-                                "identificados": [],
-                                "anonimos": {
-                                    "totales": 0,
-                                    "bonos": 0
-                                }
-                            }
-                            datos_op.votantes.forEach(vt => {
-                                if (vt.nombre != "anónimo") {
-                                    if (vt.bono == true) {
-                                        usuario_datos.identificados.push(`${vt.nombre}(bono)`)
-                                    }
-                                    else {
-                                        usuario_datos.identificados.push(vt.nombre)
-                                    }
-                                }
-                                else {
-                                    usuario_datos.anonimos.totales++
-                                    if (vt.bono == true) usuario_datos.anonimos.bonos++
-                                }
-                            })
-                            let usuarios = ``
-                            if (usuario_datos.anonimos.totales != 0) {
-                                usuarios += `*${VALOR_DEFECTO_NOMBRE_USUARIO} (bonos: ${usuario_datos.anonimos.bonos} de ${usuario_datos.anonimos.totales})`
-                                if (usuario_datos.identificados.length != 0) {
-                                    usuarios += "</br>"
-                                }
-                            }
-                            usuario_datos.identificados.forEach(us => {
-                                usuarios += `${us}</br>`
-                            })
-                            html += `<tr>
-                                        <td>${encuesta[0].opciones[datos_op.id]}</td>
-                                        <td>${usuarios}</td>
-                                        </tr>`
-                        })
-                        html += "</table>"
-                        return html
-                    }
-
-                    $pagina_datos_analizados_encuesta.innerHTML = `<div class="head-pagina-datos"><div><h3>${encuesta[0].titulo}</h3></div><span id="bt-salir-pagina-datos">Salir</span></div>
+                    $pagina_datos_analizados_encuesta.innerHTML = `<div class="head-pagina-datos"><div><h3>${encuesta.titulo}</h3></div><span id="bt-salir-pagina-datos">Salir</span></div>
                     <table>
                     <caption><strong>Recuento de votos</strong></br>(más a menos votado)</caption>
-                    ${mostrar_recuento_votos()}
+                    ${mostrar_recuento_votos(contador_votaciones, encuesta)}
                     </table>
                     ${!data.voto_anonimo ? mostrar_nombre_votantes() : ""}
                     `
@@ -523,4 +521,3 @@ globalThis.addEventListener("DOMContentLoaded", () => {
         });
 
 })
-
