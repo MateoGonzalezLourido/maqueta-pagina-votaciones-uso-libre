@@ -501,7 +501,8 @@ main {
   position: absolute;
   z-index: 2;
   right: 10px;
-  width: 80px;
+  min-width: 80px;
+  max-width: max-content;
   padding: 2px;
   height: 22px;
   text-align: center;
@@ -689,18 +690,36 @@ textarea {
   border-radius: 8px;
   font-weight: 600;
   color: #090909e8;
+  border: none;
 }
 
 #bt-cerrar-encuesta {
   background-color: rgb(216, 70, 70);
+  transition: 0.25s;
+}
+
+#bt-cerrar-encuesta:hover {
+  background-color: rgba(216, 70, 70, 0.845);
 }
 
 #bt-guardar-cambios-encuesta {
   background-color: rgba(64, 131, 255, 0.811);
+  margin-left: 2px;
+  margin-right: 2px;
+  transition: 0.25s;
+}
+
+#bt-guardar-cambios-encuesta:hover {
+  background-color: rgba(64, 131, 255, 0.641);
 }
 
 #bt-cancelar-cambios-encuesta {
   background-color: rgba(139, 125, 238, 0.8);
+  transition: 0.25s;
+}
+
+#bt-cancelar-cambios-encuesta:hover {
+  background-color: rgba(138, 125, 238, 0.685);
 }
 
 .cuerpo-ajustes {
