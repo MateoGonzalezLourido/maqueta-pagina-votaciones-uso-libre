@@ -535,11 +535,11 @@ globalThis.addEventListener("DOMContentLoaded", () => {
             document.querySelector(`#${ID_MENU_ADMIN}`).classList.add(CLASS_MOSTRAR_MENU)
             /*TODO:arreglarlo para mobil, en el mobil no funciona */
             setTimeout(() => {
-                document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).focus();
-            }, 1000) 
-            document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).addEventListener("blur", () => {
-                cerrar_log()
-            })
+                document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).focus()
+                document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).addEventListener("blur", () => {
+                    cerrar_log()
+                })
+            }, 200)
             function ejecutar() {
                 const entrada_key_log = (document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).value.replace(/[.\\/;,!#{}%&$"'*]/g, " ").trim()).toString()
                 if (verificar_acceso_admin(entrada_key_log)) {
