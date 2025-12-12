@@ -167,13 +167,13 @@ const Generar_configurador_encuesta = (encuesta_id) => {
         }
         else {
             //guardar datos en local
-            window.sessionStorage.setItem(NAME_AJUSTES_ENCUESTA, JSON.stringify(encuesta[0]))
-            const principal = encuesta[0].principal ? "checked" : ""
-            const republicar = encuesta[0].republicar ? "checked" : ""
-            const votounico = encuesta[0].voto_unico ? "checked" : ""
-            const mostrarresultados = encuesta[0].mostrar_resultados_cerrada ? "checked" : ""
-            const datosanonimos = encuesta[0].datos_anonimos ? "checked" : ""
-            const votoanonimo = encuesta[0].voto_anonimo ? "checked" : ""
+            window.sessionStorage.setItem(NAME_AJUSTES_ENCUESTA, JSON.stringify(encuesta))
+            const principal = encuesta.principal ? "checked" : ""
+            const republicar = encuesta.republicar ? "checked" : ""
+            const votounico = encuesta.voto_unico ? "checked" : ""
+            const mostrarresultados = encuesta.mostrar_resultados_cerrada ? "checked" : ""
+            const datosanonimos = encuesta.datos_anonimos ? "checked" : ""
+            const votoanonimo = encuesta.voto_anonimo ? "checked" : ""
             const d = new Date()
             const f = new Date();
             f.setDate(f.getDate() + 7);
@@ -189,18 +189,18 @@ const Generar_configurador_encuesta = (encuesta_id) => {
                 String(f.getFullYear()) + "T" +
                 String(f.getHours()).padStart(2, "0") + ":" +
                 String(f.getMinutes()).padStart(2, "0");
-            const fecha_inicio = encuesta[0].duracion_fechas[0] != "" ? encuesta[0].duracion_fechas[0] : fecha_actual
-            const fecha_fin = encuesta[0].duracion_fechas[1] != "" ? encuesta[0].duracion_fechas[1] : fecha_final
+            const fecha_inicio = encuesta.duracion_fechas[0] != "" ? encuesta.duracion_fechas[0] : fecha_actual
+            const fecha_fin = encuesta.duracion_fechas[1] != "" ? encuesta.duracion_fechas[1] : fecha_final
             document.querySelector("#cuerpo-cosas").innerHTML = `
             <div class="apartado">
                 <h3>>Principales</h3>
                 <div>
                     <label for="input-titulo">Título</label>
-                    <input type="text" id="input-titulo" value="${encuesta[0].titulo}" placeholder="Sin Título">
+                    <input type="text" id="input-titulo" value="${encuesta.titulo}" placeholder="Sin Título">
                 </div>
                 <div class="apartado-opciones">
                     <span>Opciones</span>
-                    <textarea id="input-opciones" placeholder="opcion1, opcion2, ...">${encuesta[0].opciones}</textarea>
+                    <textarea id="input-opciones" placeholder="opcion1, opcion2, ...">${encuesta.opciones}</textarea>
                 </div>
                 <div>
                 <label for="input-votounico">Voto único
