@@ -939,3 +939,20 @@ textarea {
   top: 3px;
   cursor: pointer;
 }
+
+#mensaje-datos-guardados-exito {
+  display: flex;
+  position: fixed;
+  top: 5px;
+  right: 5px;
+  z-index: 101;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  background-color: #111119e1;
+  backdrop-filter: blur(5px);
+  width: 250px;
+  height: 25px;
+  border-radius: 6px;
+  animation: aparecer 0.3s ease;
+}

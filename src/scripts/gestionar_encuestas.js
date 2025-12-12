@@ -128,17 +128,20 @@ function comprobar_actualizar_datos(id_encuesta, datos_guardados) {
     }
     //actualizar base de datos(si hay algun cambio)
     //actualizar local
+    console.log(datos_cambiar)
     if (Object.keys(datos_cambiar).length > 0) {
         window.sessionStorage.setItem(NAME_AJUSTES_ENCUESTA, JSON.stringify(nuevos_datos_guardado))
         actualizar_votacion_SUPABASE({ id_encuesta: id_encuesta, datos_cambiar: datos_cambiar }).then(() => {
-            document.querySelector("#app").insertAdjacentHTML("afterend", `
-                <div id="mensaje-datos-guardados-exito">
+            console.log("d")
+            document.querySelector("#app").insertAdjacentHTML("afterbegin", `
+                <div id="mensaje-datos-guardados-exito" style="display:flex">
                 <span>Cambios realizados✅</span>
                 </div>
                 `)
+            document.querySelector("#mensaje-datos-guardados-exito").style.display = "flex"
             setTimeout(() => {
                 document.querySelector("#mensaje-datos-guardados-exito").style.display = "none"
-            }, 1000)
+            }, 1500)
         })
     }
 }
