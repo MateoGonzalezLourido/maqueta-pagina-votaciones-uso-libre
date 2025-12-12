@@ -542,7 +542,6 @@ globalThis.addEventListener("DOMContentLoaded", () => {
             }, 200)
             function ejecutar() {
                 const entrada_key_log = (document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).value.replace(/[.\\/;,!#{}%&$"'*]/g, " ").trim()).toString()
-                alert(entrada_key_log)
                 if (verificar_acceso_admin(entrada_key_log)) {
                     console.log(`%c${MENSAJE_ACCESO_CORRECTO}`, "color: green; font-weight: bold;");
                     //poner una como principal
