@@ -7,19 +7,19 @@ import './scripts/gestionar_encuestas.js'
 const URL_REPOSITORIO_ORIGINAL = "https://github.com/MateoGonzalezLourido/maqueta-pagina-votaciones-uso-libre"
 
 document.querySelector('#app').innerHTML = `
-<div id="bt-abrir-menu-log-admin"><span>*ADMIN*</span></div>
+  <div id="bt-abrir-menu-log-admin"><span>*ADMIN*</span></div>
   <div class="usuario">
     <div id="bt-usuario"><span>*Datos Usuario*</span></div>
       <div id="menu-usuario">
         <div>
           <label for="input-nombre-usuario">Nombre:</label>
-          <input type="number" placeholder="<anónimo>"value="" id="input-nombre-usuario">
+          <input type="text" placeholder="<anónimo>"value="" id="input-nombre-usuario">
           </div>
           <div>
-          <label for="bono">Bono:</label>
-          <input name="bono" type="checkbox"id="input-bono-usuario">
+          <label for="input-bono-usuario">Bono:</label>
+          <input type="checkbox"id="input-bono-usuario">
         </div>
-        <div   class="nota-menu-usuario">*para actualizar estos datos en las votaciones ya hechas debes vover a hacer la votación</div>
+        <div class="nota-menu-usuario">*para actualizar estos datos en las votaciones ya hechas debes vover a hacer la votación</div>
       </div>
   </div>
 

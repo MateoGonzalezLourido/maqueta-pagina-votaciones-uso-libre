@@ -533,8 +533,9 @@ globalThis.addEventListener("DOMContentLoaded", () => {
         if (document.querySelector(`#${ID_MENU_ADMIN}`)) {
             document.querySelector(`#${ID_MENU_ADMIN}`).classList.remove(CLASS_QUITAR_MENU)
             document.querySelector(`#${ID_MENU_ADMIN}`).classList.add(CLASS_MOSTRAR_MENU)
-            document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).focus()
-            document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).addEventListener("blur", () => {
+            setTimeout(() => {
+                document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).focus();
+            }, 100); document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).addEventListener("blur", () => {
                 cerrar_log()
             })
             function ejecutar() {
