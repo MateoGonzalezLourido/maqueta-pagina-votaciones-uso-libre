@@ -11,7 +11,7 @@ const CLASS_MOSTRAR_MENU = "mostrar-menu-log"
 const CLASS_QUITAR_MENU = "quitar-menu-log"
 const MENSAJE_ACCESO_CORRECTO = "*Acceso <ROL> ADMIN correcto"
 const $pagina_datos_analizados_encuesta = "admin-pagina-datos-analizados-encuesta"
-const MENU_BLOQUEO_CONTEXTO = document.querySelector("#bloqueo-interacciones-menu-contexto")
+const MENU_BLOQUEO_CONTEXTO = "bloqueo-interacciones-menu-contexto"
 /*funciones de SUPABASE*/
 import { conseguir_datos_SUPABASE, añadir_votacion_SUPABASE, actualizar_votacion_SUPABASE } from '../supabase/funciones.js'
 /*ACTUALMENTE ESTA ADMIN KEY ESTA PUBLICA */
@@ -340,7 +340,7 @@ const Generar_resultados_encuesta = (id_encuesta) => {
 const menu_confirmacion = () => {
     return new Promise((resolve) => {
         // si ya existe, eliminar
-        if (MENU_BLOQUEO_CONTEXTO) MENU_BLOQUEO_CONTEXTO.remove()
+        if (document.querySelector(`#${MENU_BLOQUEO_CONTEXTO}`)) document.querySelector(`#${MENU_BLOQUEO_CONTEXTO}`).remove()
 
         // crear menú
         document.querySelector("#main").insertAdjacentHTML("afterend", `
@@ -358,9 +358,9 @@ const menu_confirmacion = () => {
 
         // función cerrar y resolver
         const Cerrar_menu_confirmacion = (valor) => {
-            if (!MENU_BLOQUEO_CONTEXTO) resolve(valor)
+            if (!document.querySelector(`#${MENU_BLOQUEO_CONTEXTO}`)) resolve(valor)
             else {
-                MENU_BLOQUEO_CONTEXTO.remove()
+                document.querySelector(`#${MENU_BLOQUEO_CONTEXTO}`).remove()
                 resolve(valor) // resuelve la promesa con true o false
             }
         }
