@@ -564,11 +564,10 @@ globalThis.addEventListener("DOMContentLoaded", () => {
                     cerrar_log()
                 }
             }
-            document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).addEventListener("keydown", (e) => {
-                if (e.key === "Enter") ejecutar();
-            })
-            document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).addEventListener("input", e => {
-                if (e.inputType === "insertLineBreak") ejecutar();
+            document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).addEventListener("keydown", e => {
+                if (["Enter", "Go", "Done", "Search", "Send", "Next"].includes(e.key)) {
+                    ejecutar()
+                }
             })
         }
     })
