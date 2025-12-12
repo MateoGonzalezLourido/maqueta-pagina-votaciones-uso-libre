@@ -533,6 +533,7 @@ globalThis.addEventListener("DOMContentLoaded", () => {
         if (document.querySelector(`#${ID_MENU_ADMIN}`)) {
             document.querySelector(`#${ID_MENU_ADMIN}`).classList.remove(CLASS_QUITAR_MENU)
             document.querySelector(`#${ID_MENU_ADMIN}`).classList.add(CLASS_MOSTRAR_MENU)
+            /*TODO:arreglarlo para mobil, en el mobil no funciona */
             setTimeout(() => {
                 document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).focus();
             }, 1000) 
