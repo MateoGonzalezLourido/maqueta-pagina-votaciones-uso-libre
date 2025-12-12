@@ -535,7 +535,8 @@ globalThis.addEventListener("DOMContentLoaded", () => {
             document.querySelector(`#${ID_MENU_ADMIN}`).classList.add(CLASS_MOSTRAR_MENU)
             setTimeout(() => {
                 document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).focus();
-            }, 100); document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).addEventListener("blur", () => {
+            }, 1000) 
+            document.querySelector(`#${ID_INPUT_KEY_ADMIN}`).addEventListener("blur", () => {
                 cerrar_log()
             })
             function ejecutar() {
