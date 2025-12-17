@@ -1,0 +1,41 @@
+/* Pantallas pequeñas (móvil) */
+@media (max-width: 600px) {
+    #app {
+        width: 100%;
+        max-width: none;
+    }
+
+    #main {
+        width: 92%;
+        left: 4%;
+    }
+
+    #bt-abrir-menu-log-admin {
+        right: 15px;
+    }
+
+    .bt-analizar-datos {
+        margin-bottom: 30px;
+    }
+
+    #admin-pagina-datos-analizados-encuesta {
+        width: calc(100% - 20px);
+        left: 0px;
+    }
+
+    .head-pagina-datos h3 {
+        font-size: 16.8px;
+    }
+
+    #pagina-datos-analizados-encuesta {
+        line-height: 1.2 !important;
+    }
+
+    #pagina-datos-analizados-encuesta table td {
+        padding: 6.5px;
+    }
+
+    .select-gestionar-encuestas {
+        font-size: 16.5px !important;
+    }
+}
