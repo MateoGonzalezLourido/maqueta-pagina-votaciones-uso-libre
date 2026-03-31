@@ -1,4 +1,4 @@
-# maqueta-pagina-votaciones-uso-libre
+# maqueta-pagina-votaciones
 
 Una pagina para votaciones, que cualquiera puede copiar para uso propio
 
