@@ -1,5 +1,7 @@
 # maqueta-pagina-votaciones
 
+Funciona perfectamente en móviles y ordenadores
+
 ##Caracteristicas
 
 -crea y gestiona votaciones rápidamente
