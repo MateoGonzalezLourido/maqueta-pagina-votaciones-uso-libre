@@ -1,8 +1,5 @@
 # maqueta-pagina-votaciones
 
-Funciona correctamente en cualquier dispositivo y es muy fácil de copiarla y adaptarla
-
-
 ##Caracteristicas
 
 -crea y gestiona votaciones rápidamente
