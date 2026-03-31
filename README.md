@@ -1,7 +1,5 @@
 # maqueta-pagina-votaciones
 
-Una pagina para votaciones, que cualquiera puede copiar para uso propio
-
 Funciona correctamente en cualquier dispositivo y es muy fácil de copiarla y adaptarla
 
 
